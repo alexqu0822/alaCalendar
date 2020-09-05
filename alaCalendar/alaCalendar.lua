@@ -280,7 +280,7 @@ do
 		L.CALL_CALENDAR = "日历";
 		L.CALL_CONFIG = "设置";
 		L.CALL_CHAR_LIST = "角色列表";
-		L.AD_TEXT = "网易有爱提醒您：注意防疫！";
+		L.AD_TEXT = "要有爱，不要魔兽世界";
 		L["COLORED_FORMATTED_TIME_LEN"] = {
 			"\124cff%.2x%.2x00%d天%02d时%02d分%02d秒\124r",
 			"\124cff%.2x%.2x00%d时%02d分%02d秒\124r",
@@ -362,7 +362,7 @@ do
 		L.CALL_CALENDAR = "日曆";
 		L.CALL_CONFIG = "設置";
 		L.CALL_CHAR_LIST = "角色列表";
-		L.AD_TEXT = "網易有愛提醒您：注意防疫！";
+		L.AD_TEXT = "要有愛，不要魔獸爭霸";
 		L["COLORED_FORMATTED_TIME_LEN"] = {
 			"\124cff%.2x%.2x00%d天%02d時%02d分%02d秒\124r",
 			"\124cff%.2x%.2x00%d時%02d分%02d秒\124r",
@@ -444,7 +444,7 @@ do
 		L.CALL_CALENDAR = "달력";
 		L.CALL_CONFIG = "설치";
 		L.CALL_CHAR_LIST = "캐릭터 목록";
-		L.AD_TEXT = "Watch out for COVID-19";
+		L.AD_TEXT = "More Love Less Hatred";
 		L["COLORED_FORMATTED_TIME_LEN"] = {
 			"\124cff%.2x%.2x00%d일 %02d시간 %02d분 %02d초\124r",
 			"\124cff%.2x%.2x00%d시간 %02d분 %02d초\124r",
@@ -526,7 +526,7 @@ do
 		L.CALL_CALENDAR = "Calendar";
 		L.CALL_CONFIG = "Config";
 		L.CALL_CHAR_LIST = "Character list";
-		L.AD_TEXT = "Watch out for COVID-19";
+		L.AD_TEXT = "More Love Less Hatred";
 		L["COLORED_FORMATTED_TIME_LEN"] = {
 			"\124cff%.2x%.2x00%dd %02dh %02dm %02ds\124r",
 			"\124cff%.2x%.2x00%dh %02dm %02ds\124r",
@@ -1517,6 +1517,7 @@ do	--	MAIN
 						cell:HideCurtain1Tex();
 						cell:HideCurtain2Tex();
 						local info = nil;
+						local info_line_num = 0;
 						cell:ResetInstance();
 						local state = cell.state;
 						wipe(state);
@@ -1579,7 +1580,13 @@ do	--	MAIN
 														cell:AddInstance(val[6], val[9]);
 													end
 													if SET.instance_text then
-														info = info and (info .. "\n" .. inst) or inst;
+														if info_line_num >= 2 then
+															info = info and (info .. "\n" .. inst) or inst;
+															info_line_num = 1;
+														else
+															info = info and (info .. ", " .. inst) or inst;
+															info_line_num = info_line_num + 1;
+														end
 													end
 												end
 											end
@@ -1666,8 +1673,8 @@ do	--	MAIN
 							end
 						end
 						cell:RefreshInstance();
-						if SET.instance_text then
-							cell:SetInfo(info);
+						if SET.instance_text and info ~= nil then
+							cell:SetInfo("\124cffbfffff" .. info .. "\124r");
 						else
 							cell:SetInfo(nil);
 						end
