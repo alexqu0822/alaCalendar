@@ -1222,7 +1222,7 @@ do	--	MAIN
 				date_engine.milestone["BWL"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
 				date_engine.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
 				date_engine.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
-				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 1 * 3600;		-- 1567213200
+				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		-- 1567213200
 				date_engine.milestone["NAXX"][1] = 18137 * 86400 + 1 * 3600;	-- 1567040400
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
