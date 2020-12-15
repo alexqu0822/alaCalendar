@@ -32,7 +32,7 @@ end
 local __rt = __ala_meta__.__rt;
 
 local LOCALE = GetLocale();
-local curPhase = 5;
+local curPhase = 6;
 ----------------------------------------------------------------------------------------------------upvalue
 	----------------------------------------------------------------------------------------------------LUA
 	local math, table, string, bit = math, table, string, bit;
@@ -1103,7 +1103,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
 				date_engine.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
 				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18135 * 86400 + 16 * 3600;	--
+				date_engine.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 8 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
@@ -1133,7 +1133,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
 				date_engine.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
 				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18135 * 86400 + 16 * 3600;	--
+				date_engine.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 8 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
@@ -1163,7 +1163,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
 				date_engine.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
 				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		--~ 1567213200
-				date_engine.milestone["NAXX"][1] = 18137 * 86400 + 1 * 3600;	-- 1567040400
+				date_engine.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
@@ -1193,7 +1193,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18368 * 86400 + 7 * 3600;		--
 				date_engine.milestone["TAQ"][1] = 18472 * 86400 + 7 * 3600;		--
 				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 7 * 3600;		--~
-				date_engine.milestone["NAXX"][1] = 18136 * 86400 + 7 * 3600;	--
+				date_engine.milestone["NAXX"][1] = 18598 * 86400 + 7 * 3600;	--
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
@@ -1223,7 +1223,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
 				date_engine.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
 				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		-- 1567213200
-				date_engine.milestone["NAXX"][1] = 18137 * 86400 + 1 * 3600;	-- 1567040400
+				date_engine.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
@@ -1253,7 +1253,7 @@ do	--	MAIN
 				date_engine.milestone["ZG"][1] = 18369 * 86400 + 23 * 3600;		--	modified	1586991600
 				date_engine.milestone["TAQ"][1] = 18470 * 86400 + 23 * 3600;	--
 				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 23 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18134 * 86400 + 23 * 3600;	--
+				date_engine.milestone["NAXX"][1] = 18596 * 86400 + 23 * 3600;	--
 				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
 				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
 				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
