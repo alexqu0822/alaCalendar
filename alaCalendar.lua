@@ -1,12 +1,5 @@
 --[[--
 	by ALA @ 163UI
-	复用代码请在显著位置标注来源【ALA@网易有爱】
-	Please Keep WOW Addon open-source & Reduce barriers for others.
-	请勿加密、乱码、删除空格tab换行符、设置加载依赖
-	##	2020-04-27
-		Initial beta
-	##	2020-05-13
-		Config frame. DST. Adjust time.
 --]]--
 ----------------------------------------------------------------------------------------------------
 local ADDON, NS = ...;
@@ -29,7 +22,7 @@ do
 	end
 	setfenv(1, NS.__fenv);
 end
-local __rt = __ala_meta__.__rt;
+local __raidlib = __ala_meta__.__raidlib;
 
 local LOCALE = GetLocale();
 local curPhase = 6;
@@ -85,13 +78,15 @@ local curPhase = 6;
 		texture_unk = "Interface\\Icons\\inv_misc_questionmark",
 		texture_highlight = "Interface\\Buttons\\UI-Common-MouseHilight",
 		texture_triangle = "interface\\transmogrify\\transmog-tooltip-arrow",
-		texture_collapsed = "interface\\buttons\\ui-plusbutton-up",
-		texture_expanded = "interface\\buttons\\ui-minusbutton-up",
+		texture_arrowleft = "Interface\\AddOns\\alaCalendar\\ARTWORK\\ArrowLeft",
+		texture_arrowright = "Interface\\AddOns\\alaCalendar\\ARTWORK\\ArrowRight",
+		texture_collapsed = "Interface\\AddOns\\alaCalendar\\ARTWORK\\PlusButtonClear",
+		texture_expanded = "Interface\\AddOns\\alaCalendar\\ARTWORK\\MinusButtonClear",
 		texture_claw = "interface\\timer\\panda-logo",
-		texture_config = "interface\\buttons\\ui-optionsbutton",
+		texture_config = "Interface\\AddOns\\alaCalendar\\ARTWORK\\Config",
 		texture_triangle_normal_color = { 0.5, 0.5, 0.5, 1.0, },
 		texture_triangle_pushed_color = { 0.25, 0.25, 0.25, 1.0, },
-		texture_close = "interface\\common\\indicator-red",
+		texture_close = "Interface\\AddOns\\alaCalendar\\ARTWORK\\Close",
 		texture_reset = "Interface\\Buttons\\UI-RefreshButton",
 
 		frameTitle_YSize = 48,
@@ -197,361 +192,10 @@ local curPhase = 6;
 		}
 	]]
 ----------------------------------------------------------------------------------------------------
-local L = {  };
-do
-	L.REGION = {
-		[1] = "US-Pacific",
-		[2] = "US-Eastern",
-		[3] = "Korea-대한민국",
-		[4] = "Europe",
-		[5] = "Taiwan, China-中國台灣",
-		[6] = "China-中国大陆",
-	};
-	L.CLASS = {  };
-	for class, lClass in next, Mixin({  }, LOCALIZED_CLASS_NAMES_MALE, LOCALIZED_CLASS_NAMES_FEMALE) do
-		L.CLASS[strupper(class)] = lClass;
-	end
-	L.COLORED_CLASS = {  };
-	for class, lClass in next, L.CLASS do
-		local classColorTable = RAID_CLASS_COLORS[class];
-		if classColorTable then
-			L.COLORED_CLASS[class] = format("\124cff%.2x%.2x%.2x%s\124r", classColorTable.r * 255, classColorTable.g * 255, classColorTable.b * 255, lClass);
-		else
-			L.COLORED_CLASS[class] = "\124cffffffff" .. lClass .. "\124r";
-		end
-	end
-	if LOCALE == "zhCN" then
-		L.CALENDAR = "日历";
-		L.BOARD = "进度";
-		L.WEEKTITLE = {
-			[1] = "星期一";
-			[2] = "星期二";
-			[3] = "星期三";
-			[4] = "星期四";
-			[5] = "星期五";
-			[6] = "星期六";
-			[0] = "星期日";
-		};
-		L.YEAR_FORMAT = "%d";
-		L.MONTH_FORMAT = "年%s";
-		L.MONTH = {
-			"1月",
-			"2月",
-			"3月",
-			"4月",
-			"5月",
-			"6月",
-			"7月",
-			"8月",
-			"9月",
-			"10月",
-			"11月",
-			"12月",
-		};
-		L.FORMAT_DATE_TODAY = "%Y年%m月%d日 %lw";
-		L.FORMAT_CLOCK = "%H:%M:%S";
-		L.INSTANCE_RESET = " \124cffff9f00重置\124r";
-		L.FESTIVAL_START = " \124cff00ff00开始\124r";
-		L.FESTIVAL_END = " \124cffff0000结束\124r";
-		L.INSTANCE_LOCKED_DOWN = "锁定";
-		L.SLASH_NOTE = {
-			region = "地区设置为：%s",
-			dst = "使用DST时间",
-			use_realm_time_zone = "使用服务器时区",
-			instance_icon = "副本图标",
-			instance_text = "副本文本",
-			first_col_day = "首列设置为：%s",
-			show_DBIcon = "小地图按钮",
-			scale = "缩放",
-			alpha = "透明度",
-			show_unlocked = "显示所有角色",
-			hide_calendar_on_esc = "按ESC隐藏日历",
-			hide_board_on_esc = "按ESC隐藏进度面板",
-		};
-		L.TooltipLines = {
-			"\124cff00ff00左键点击\124r打开/关闭日历",
-			"\124cff00ff00右键点击\124r打开/关闭副本进度",
-		};
-		L.DBIcon_Text = "日历";
-		L.CLOSE = "关闭";
-		L.RESET_ALL_SETTINGS = "重置所有设置";
-		L.RESET_ALL_SETTINGS_NOTIFY = "确定要重置所有设置？";
-		L.CALL_BOARD = "副本进度";
-		L.CALL_CALENDAR = "日历";
-		L.CALL_CONFIG = "设置";
-		L.CALL_CHAR_LIST = "角色列表";
-		L.AD_TEXT = "要有爱，不要魔兽世界";
-		L["COLORED_FORMATTED_TIME_LEN"] = {
-			"\124cff%.2x%.2x00%d天%02d时%02d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d时%02d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d秒\124r",
-		};
-		L["FORMATTED_TIME_LEN"] = {
-			"%d天%02d时%02d分%02d秒",
-			"%d时%02d分%02d秒",
-			"%d分%02d秒",
-			"%d秒",
-		};
-		L["FORMATTED_TIME"] = "%Y年%m月%d日\n%H:%M:%S";
-		L["COOLDOWN_EXPIRED"] = "冷却结束";
-		L.CHAR_LIST = "角色列表";
-		L.CHAR_ADD = "手动添加";
-		L.CHAR_DEL = "删除角色";
-		L.CHAR_MOD = "修改角色"
-		L.EXISTED = "\124cffff0000角色已经存在\124r";
-		L.LOCKDOWN_ADD = "副本锁定";
-		L.LOCKDOWN_DEL = "副本未锁定";
-	elseif LOCALE == "zhTW" then
-		L.CALENDAR = "日曆";
-		L.BOARD = "進度";
-		L.WEEKTITLE = {
-			[1] = "星期一";
-			[2] = "星期二";
-			[3] = "星期三";
-			[4] = "星期四";
-			[5] = "星期五";
-			[6] = "星期六";
-			[0] = "星期日";
-		};
-		L.YEAR_FORMAT = "%d";
-		L.MONTH_FORMAT = "年%s";
-		L.MONTH = {
-			"1月",
-			"2月",
-			"3月",
-			"4月",
-			"5月",
-			"6月",
-			"7月",
-			"8月",
-			"9月",
-			"10月",
-			"11月",
-			"12月",
-		};
-		L.FORMAT_DATE_TODAY = "%Y年%m月%d日 %lw";
-		L.FORMAT_CLOCK = "%H:%M:%S";
-		L.INSTANCE_RESET = " \124cffff9f00重置\124r";
-		L.FESTIVAL_START = " \124cff00ff00開始\124r";
-		L.FESTIVAL_END = " \124cffff0000結束\124r";
-		L.INSTANCE_LOCKED_DOWN = "鎖定";
-		L.SLASH_NOTE = {
-			region = "地區設定為：%s",
-			dst = "使用DST時間",
-			use_realm_time_zone = "使用伺服器時區",
-			instance_icon = "複本圖示",
-			instance_text = "副本文本",
-			first_col_day = "首欄設置爲：%s",
-			show_DBIcon = "小地圖按鈕",
-			scale = "縮放",
-			alpha = "透明度",
-			show_unlocked = "顯示所有角色",
-			hide_calendar_on_esc = "按ESC隱藏日曆",
-			hide_board_on_esc = "按ESC隱藏進度面板",
-		};
-		L.TooltipLines = {
-			"\124cff00ff00左鍵點擊\124r打開/關閉日曆",
-			"\124cff00ff00右鍵點擊\124r打開/關閉副本進度",
-		};
-		L.DBIcon_Text = "日曆";
-		L.CLOSE = "關閉";
-		L.RESET_ALL_SETTINGS = "重置所有配置";
-		L.RESET_ALL_SETTINGS_NOTIFY = "確定要重置所有配置？";
-		L.CALL_BOARD = "副本進度";
-		L.CALL_CALENDAR = "日曆";
-		L.CALL_CONFIG = "設置";
-		L.CALL_CHAR_LIST = "角色列表";
-		L.AD_TEXT = "要有愛，不要魔獸爭霸";
-		L["COLORED_FORMATTED_TIME_LEN"] = {
-			"\124cff%.2x%.2x00%d天%02d時%02d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d時%02d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d分%02d秒\124r",
-			"\124cff%.2x%.2x00%d秒\124r",
-		};
-		L["FORMATTED_TIME_LEN"] = {
-			"%d天%02d時%02d分%02d秒",
-			"%d時%02d分%02d秒",
-			"%d分%02d秒",
-			"%d秒",
-		};
-		L["FORMATTED_TIME"] = "%Y年%m月%d日\n%H:%M:%S";
-		L["COOLDOWN_EXPIRED"] = "冷卻結束";
-		L.CHAR_LIST = "角色列表";
-		L.CHAR_ADD = "手動添加";
-		L.CHAR_DEL = "刪除角色";
-		L.CHAR_MOD = "修改角色"
-		L.EXISTED = "\124cffff0000角色已經存在\124r";
-		L.LOCKDOWN_ADD = "副本鎖定";
-		L.LOCKDOWN_DEL = "副本未鎖定";
-	elseif LOCALE == "koKR" then
-		L.CALENDAR = "달력";
-		L.BOARD = "인스턴스";
-		L.WEEKTITLE = {
-			[1] = "월";
-			[2] = "화";
-			[3] = "수";
-			[4] = "목";
-			[5] = "금";
-			[6] = "토";
-			[0] = "일";
-		};
-		L.YEAR_FORMAT = "%d";
-		L.MONTH_FORMAT = "년%s";
-		L.MONTH = {
-			" 1월",
-			" 2월",
-			" 3월",
-			" 4월",
-			" 5월",
-			" 6월",
-			" 7월",
-			" 8월",
-			" 9월",
-			" 10월",
-			" 11월",
-			" 12월",
-		};
-		L.FORMAT_DATE_TODAY = "%Y년 %m월 %d일 %lw요일";
-		L.FORMAT_CLOCK = "%H:%M:%S";
-		L.INSTANCE_RESET = " \124cffff9f00초기화\124r";
-		L.FESTIVAL_START = " \124cff00ff00시작\124r";
-		L.FESTIVAL_END = " \124cffff0000종료\124r";
-		L.INSTANCE_LOCKED_DOWN = "잠김";
-		L.SLASH_NOTE = {
-			region = "지역 변경: %s",
-			dst = "DST 시간 사용 하기",
-			use_realm_time_zone = "서버 시간 대 사용 하기",
-			instance_icon = "복사 아이콘",
-			instance_text = "복사 본 텍스트",
-			first_col_day = "첫번째 열의 요일 변경: %s",
-			show_DBIcon = "미니맵 버튼",
-			scale = "Scale",
-			alpha = "Alpha",
-			show_unlocked = "잠긴 인스턴스 문자 표시",
-			hide_calendar_on_esc = "ESC 로 달력 숨 기기",
-			hide_board_on_esc = "ESC 숨 기기 패 널 누 르 기",
-		};
-		L.TooltipLines = {
-			"\124cff00ff00좌클릭\124r 달력 토글",
-			"\124cff00ff00우클릭\124r 잠긴 인스턴스 토글",
-		};
-		L.DBIcon_Text = "달력";
-		L.CLOSE = "닫기";
-		L.RESET_ALL_SETTINGS = "모든 설정 초기 화";
-		L.RESET_ALL_SETTINGS_NOTIFY = "모든 설정 을 리 셋 하 시 겠 습 니까?";
-		L.CALL_BOARD = "인던 잠김";
-		L.CALL_CALENDAR = "달력";
-		L.CALL_CONFIG = "설치";
-		L.CALL_CHAR_LIST = "캐릭터 목록";
-		L.AD_TEXT = "More Love Less Hatred";
-		L["COLORED_FORMATTED_TIME_LEN"] = {
-			"\124cff%.2x%.2x00%d일 %02d시간 %02d분 %02d초\124r",
-			"\124cff%.2x%.2x00%d시간 %02d분 %02d초\124r",
-			"\124cff%.2x%.2x00%d분 %02d초\124r",
-			"\124cff%.2x%.2x00%d초\124r",
-		};
-		L["FORMATTED_TIME_LEN"] = {
-			"%d일 %02d시간 %02d분 %02d초",
-			"%d시 %02d분 %02d초",
-			"%d분 %02d초",
-			"%d초",
-		};
-		L["FORMATTED_TIME"] = "%Y년%m월%d일\n%H:%M:%S";
-		L["COOLDOWN_EXPIRED"] = "유효함";
-		L.CHAR_LIST = "캐릭터 목록";
-		L.CHAR_ADD = "수 동 추가";
-		L.CHAR_DEL = "캐릭터 삭제";
-		L.CHAR_MOD = "역할 변경"
-		L.EXISTED = "\124cffff0000캐릭터 가 이미 존재 합 니 다\124r";
-		L.LOCKDOWN_ADD = "잠 금";
-		L.LOCKDOWN_DEL = "잠 금 되 지 않 음";
-	else
-		L.CALENDAR = "Calendar";
-		L.BOARD = "Instance";
-		L.WEEKTITLE = {
-			[1] = "Mon.";
-			[2] = "Tues.";
-			[3] = "Wed.";
-			[4] = "Thur.";
-			[5] = "Fri.";
-			[6] = "Sat.";
-			[0] = "Sun.";
-		};
-		L.YEAR_FORMAT = "%d";
-		L.MONTH_FORMAT = "%s ";
-		L.MONTH = {
-			"Jan.",
-			"Feb.",
-			"Mar.",
-			"Apr.",
-			"May.",
-			"Jun.",
-			"Jul.",
-			"Aug.",
-			"Sep.",
-			"Oct.",
-			"Nov.",
-			"Dec.",
-		};
-		L.FORMAT_DATE_TODAY = "%b %d, %y %lw";
-		L.FORMAT_CLOCK = "%H:%M:%S";
-		L.INSTANCE_RESET = " \124cffff9f00reset\124r";
-		L.FESTIVAL_START = " \124cff00ff00starts\124r";
-		L.FESTIVAL_END = " \124cffff0000ends\124r";
-		L.INSTANCE_LOCKED_DOWN = "Locked";
-		L.SLASH_NOTE = {
-			region = "Set region to: %s",
-			dst = "Use DST",
-			use_realm_time_zone = "Use realm time zone",
-			instance_icon = "Instance icon",
-			instance_text = "Instance text",
-			first_col_day = "Fist row is set to: %s",
-			show_DBIcon = "Minimap button",
-			scale = "Scale",
-			alpha = "Alpha",
-			show_unlocked = "Show all characters",
-			hide_calendar_on_esc = "Hide calendar on Esc",
-			hide_board_on_esc = "Hide board on Esc",
-		};
-		L.TooltipLines = {
-			"\124cff00ff00Left click\124r to toggle calendar",
-			"\124cff00ff00Right click\124r to toggle board displaying instance locked down",
-		};
-		L.DBIcon_Text = "Calendar";
-		L.CLOSE = "Close";
-		L.RESET_ALL_SETTINGS = "Reset all settings";
-		L.RESET_ALL_SETTINGS_NOTIFY = "Are you sure to reset all settings ?";
-		L.CALL_BOARD = "Instance locked down";
-		L.CALL_CALENDAR = "Calendar";
-		L.CALL_CONFIG = "Config";
-		L.CALL_CHAR_LIST = "Character list";
-		L.AD_TEXT = "More Love Less Hatred";
-		L["COLORED_FORMATTED_TIME_LEN"] = {
-			"\124cff%.2x%.2x00%dd %02dh %02dm %02ds\124r",
-			"\124cff%.2x%.2x00%dh %02dm %02ds\124r",
-			"\124cff%.2x%.2x00%dm %02ds\124r",
-			"\124cff%.2x%.2x00%ds\124r",
-		};
-		L["FORMATTED_TIME_LEN"] = {
-			"%dd %02dh %02dm %02ds",
-			"%dh %02dm %02ds",
-			"%dm %02ds",
-			"%ds",
-		};
-		L["FORMATTED_TIME"] = "%Y-%m-%d\n%H:%M:%S";
-		L["COOLDOWN_EXPIRED"] = "Available";
-		L.CHAR_LIST = "Character list";
-		L.CHAR_ADD = "Manual added";
-		L.CHAR_DEL = "Del character";
-		L.CHAR_MOD = "Mod character"
-		L.EXISTED = "\124cffff0000Character existed\124r";
-		L.LOCKDOWN_ADD = "Lock";
-		L.LOCKDOWN_DEL = "Unlock";
-	end
-	L.INSTANCE = __rt.__raid_meta.L[LOCALE] or __rt.__raid_meta.L['*'];
-end
-local ARTWORK_PATH = "Interface\\AddOns\\alaCalendar\\ARTWORK\\";
+local L = NS.L;
+L.INSTANCE = __raidlib.__raid_meta.L[LOCALE] or __raidlib.__raid_meta.L['*'];
+
+local ARTWORK_ICON_PATH = "Interface\\AddOns\\alaCalendar\\ARTWORK\\ICON";
 ---------------------------------------------------------------------------------------------------
 local AVAR, VAR, SET = nil, nil, nil;
 local gui = {  };
@@ -811,283 +455,9 @@ do	--	MAIN
 				return val - (val + date_engine.timeZone * 3600) % 86400;
 			end
 		end
-		--	fixed_cycle		1_first_seen,	2_cycle,		3_nil,			4_nil,		5_dur,	6_tex_start,	7_curtain,	8_tex_end,	9_tex_start_coord,	10_curtain_coord,	11_tex_end_coord
-		--	month_week_day	1_first_seen,	2_cycle_month,	3_check_day,	4_latency,	5_dur,	6_tex_start,	7_curtain,	8_tex_end,	9_tex_start_coord,	10_curtain_coord,	11_tex_end_coord
-		--	using UTC-0
-		date_engine.milestone = {
-			--	P1	MC, ONY			--	Global Time	--	UTC-8	2019-08-27 7:00
-			["MC"] = {
-				phase = 1,
-				type = "fixed_cycle",
-				18134 * 86400 + 23 * 3600,
-				7 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-moltencore",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			["ONY"] = {
-				phase = 1,
-				type = "fixed_cycle",
-				18138 * 86400 + 23 * 3600,		--	modified	1566860400
-				5 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-onyxiaencounter",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			--	DM									--	UTC-8	2019-10-16-Wed
-			--	P2	No more RAID					--	UTC-8	2019-11-15-Fri
-			--	BG	Warsong Gulch & Alterac Valley	--	UTC-8	2019-12-12-Thu
-			--	P3	BWL								--	Global Time	--	UTC-8	2020-2-13-Thu-7:00	PST	2020-2-12-15:00	EST	2020-2-12:18:00
-			["BWL"] = {
-				phase = 3,
-				type = "fixed_cycle",
-				18309 * 86400 + 23 * 3600,		--	modified	1581548400
-				7 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-blackwinglair",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			--	BG	Arathi Basin		--	UTC-8	2020-3-12-Thu
-			--	P4	ZG, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
-			["ZG"] = {
-				phase = 4,
-				type = "fixed_cycle",
-				18369 * 86400 + 23 * 3600,		--	modified	1586991600
-				3 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-zulgurub",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			--	P5
-			["TAQ"] = {
-				phase = 5,
-				type = "fixed_cycle",
-				18470 * 86400 + 23 * 3600,		--	modified	1595890800
-				7 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-aqtemple",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			["RAQ"] = {
-				phase = 5,
-				type = "fixed_cycle",
-				18471 * 86400 + 23 * 3600,		--	modified	1595977200
-				3 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-aqruins",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			--	P6
-			["NAXX"] = {
-				phase = 6,
-				type = "fixed_cycle",
-				18134 * 86400 + 23 * 3600,
-				7 * 86400,
-				nil,
-				nil,
-				0,
-				ARTWORK_PATH .. "Milestone\\lfgicon-naxxramas",
-				nil,
-				nil,
-				nil,
-				nil,
-				nil,
-				instance = true,
-			},
-			--
-			--	Festival
-			--	P3	DarkMoon			--	UTC-8	2020-2-7
-			["DarkMoon: Mulgore"] = {
-				phase = 3,
-				type = "month_week_day",
-				dst = true,
-				18298 * 86400 + 4 * 3600,
-				2,
-				5,
-				3 * 86400 + 4 * 3600,
-				7 * 86400 - 1 - 4 * 3600,
-				"interface\\calendar\\holidays\\calendar_darkmoonfairemulgorestart",
-				"interface\\calendar\\holidays\\calendar_darkmoonfairemulgoreongoing",
-				"interface\\calendar\\holidays\\calendar_darkmoonfairemulgoreend",
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				festival = true,
-				local_time = true,
-			},
-			["DarkMoon: Elwynn"] = {
-				phase = 3,
-				type = "month_week_day",
-				dst = true,
-				18327 * 86400 + 4 * 3600,
-				2,
-				5,
-				3 * 86400 + 4 * 3600,
-				7 * 86400 - 1 - 4 * 3600,
-				"interface\\calendar\\holidays\\calendar_darkmoonfaireelwynnstart",
-				"interface\\calendar\\holidays\\calendar_darkmoonfaireelwynnongoing",
-				"interface\\calendar\\holidays\\calendar_darkmoonfaireelwynnend",
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				festival = true,
-				local_time = true,
-			},
-			--	P4	Fishing Extravaganza
-			["Fishing Extravaganza"] = {
-				phase = 4,
-				type = "fixed_cycle",
-				dst = true,
-				1587304800,
-				7 * 86400,
-				nil,
-				nil,
-				7200 - 1,
-				"interface\\calendar\\holidays\\calendar_fishingextravaganza",
-				nil,
-				nil,
-				{ 0.0, 91 / 128, 0.0, 91 / 128, },
-				nil,
-				nil,
-				festival = true,
-				local_time = true,
-				texture_channel2 = true,
-			},
-			--	Server Time	--	03-13	04-10	05-08	Warsong Gulch
-			["Warsong Gulch"] = {
-				phase = 3,
-				type = "fixed_cycle",
-				dst = true,
-				18334 * 86400,
-				28 * 86400,
-				nil,
-				nil,
-				4 * 86400 - 1,
-				"interface\\glues\\loadingscreens\\loadscreenwarsonggulch",		-- "interface\\lfgframe\\lfgicon-battleground",
-				"interface\\calendar\\holidays\\calendar_weekendmistsofpandariaongoing",
-				nil,
-				nil,
-				{ 0.0, 91 / 128, 91 / 128, 0.0, },
-				nil,
-				festival = true,
-				local_time = true,
-				curtain_channel2 = true,
-			},
-			--	Server Time	--	03-20	04-17	05-15	Arathi Basin
-			["Arathi Basin"] = {
-				phase = 3,
-				type = "fixed_cycle",
-				dst = true,
-				18341 * 86400,
-				28 * 86400,
-				nil,
-				nil,
-				4 * 86400 - 1,
-				"interface\\glues\\loadingscreens\\loadscreenarathibasin",		-- "interface\\calendar\\holidays\\calendar_volunteerguardday",
-				"interface\\calendar\\holidays\\calendar_weekendpvpskirmishongoing",
-				nil,
-				nil,
-				{ 0.0, 91 / 128, 91 / 128, 0.0, },
-				nil,
-				festival = true,
-				local_time = true,
-				curtain_channel2 = true,
-			},
-			--	Server Time	--	03-27	04-24	05-22	None
-			--	Server Time	--	04-03	05-01	05-29	Alterac Valley
-			["Alterac Valley"] = {
-				phase = 3,
-				type = "fixed_cycle",
-				dst = true,
-				18355 * 86400,
-				28 * 86400,
-				nil,
-				nil,
-				4 * 86400 - 1,
-				"interface\\glues\\loadingscreens\\loadscreenpvpbattleground",	-- "interface\\lfgframe\\lfgicon-battleground",
-				"interface\\calendar\\holidays\\calendar_weekendwrathofthelichkingongoing",
-				nil,
-				nil,
-				{ 0.0, 91 / 128, 91 / 128, 0.0, },
-				nil,
-				festival = true,
-				local_time = true,
-				curtain_channel2 = true,
-			},
-			["ala"] = {
-				phase = 0,
-				type = "fixed_cycle",
-				1566835200,
-				7 * 86400,
-				nil,
-				nil,
-				86400,
-				"interface\\lfgframe\\lfgicon-moltencore",
-				nil,
-				nil,
-				instance = true,
-			},
-		};
-		date_engine.milestone_list = {
-			"NAXX",
-			"TAQ",
-			"BWL",
-			"MC",
-			-- "ala",
-			"RAQ",
-			"ZG",
-			"ONY",
-			"Warsong Gulch",
-			"Arathi Basin",
-			"Alterac Valley",
-			"DarkMoon: Mulgore",
-			"DarkMoon: Elwynn",
-			"Fishing Extravaganza",
-		};
+
 		function NS.set_time_zone()
-			date_engine.timeZone = SET.use_realm_time_zone and date_engine.realmTimeZone or date_engine.userTimeZone;
+			date_engine.timeZone = SET.use_realm_time_zone and NS.realmTimeZone or date_engine.userTimeZone;
 		end
 		function NS.init_time_zone()
 			local userTimeZone = date_engine.get_user_time_zone();
@@ -1095,190 +465,8 @@ do	--	MAIN
 			NS.apply_region[SET.region]();
 			NS.set_time_zone();
 		end
-		NS.apply_region = {
-			[1] = function(region)	--	1 = US Pacific		UTC-8
-				date_engine.milestone["MC"][1] = 18135 * 86400 + 16 * 3600;		--
-				date_engine.milestone["ONY"][1] = 18141 * 86400 + 16 * 3600;	--
-				date_engine.milestone["BWL"][1] = 18310 * 86400 + 16 * 3600;	--
-				date_engine.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
-				date_engine.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
-				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 8 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 8 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 14 * 3600;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (-8) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = -8;
-				NS.set_time_zone();
-			end,
-			[2] = function(region)	--	2 = US Eastern		UTC-5
-				date_engine.milestone["MC"][1] = 18135 * 86400 + 16 * 3600;		--
-				date_engine.milestone["ONY"][1] = 18141 * 86400 + 16 * 3600;	--
-				date_engine.milestone["BWL"][1] = 18310 * 86400 + 16 * 3600;	--
-				date_engine.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
-				date_engine.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
-				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 8 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 8 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 17 * 3600;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400 + 3 * 3600;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400 + 3 * 3600;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400 + 3 * 3600;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (-5) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = -5;
-				NS.set_time_zone();
-			end,
-			[3] = function(region)	--	3 = Korea
-				date_engine.milestone["MC"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
-				date_engine.milestone["ONY"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
-				date_engine.milestone["BWL"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
-				date_engine.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
-				date_engine.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
-				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		--~ 1567213200
-				date_engine.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 1587304800;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (9) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = 9;
-				NS.set_time_zone();
-			end,
-			[4] = function(region)	--	4 = Europe			UTC+1
-				date_engine.milestone["MC"][1] = 18136 * 86400 + 7 * 3600;		--
-				date_engine.milestone["ONY"][1] = 18140 * 86400 + 7 * 3600;		--
-				date_engine.milestone["BWL"][1] = 18304 * 86400 + 7 * 3600;		--
-				date_engine.milestone["ZG"][1] = 18368 * 86400 + 7 * 3600;		--
-				date_engine.milestone["TAQ"][1] = 18472 * 86400 + 7 * 3600;		--
-				date_engine.milestone["RAQ"][1] = 18470 * 86400 + 7 * 3600;		--~
-				date_engine.milestone["NAXX"][1] = 18598 * 86400 + 7 * 3600;	--
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 1587254400 + 14 * 3600;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (1) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = 1;
-				NS.set_time_zone();
-			end,
-			[5] = function(region)	--	5 = Taiwan
-				date_engine.milestone["MC"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
-				date_engine.milestone["ONY"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
-				date_engine.milestone["BWL"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
-				date_engine.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
-				date_engine.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
-				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		-- 1567213200
-				date_engine.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 1587304800;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (8) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = 8;
-				NS.set_time_zone();
-			end,
-			[6] = function(region)	--	6 = China
-				date_engine.milestone["MC"][1] = 18134 * 86400 + 23 * 3600;		--
-				date_engine.milestone["ONY"][1] = 18138 * 86400 + 23 * 3600;	--	modified	1566860400
-				date_engine.milestone["BWL"][1] = 18309 * 86400 + 23 * 3600;	--	modified	1581548400
-				date_engine.milestone["ZG"][1] = 18369 * 86400 + 23 * 3600;		--	modified	1586991600
-				date_engine.milestone["TAQ"][1] = 18470 * 86400 + 23 * 3600;	--
-				date_engine.milestone["RAQ"][1] = 18471 * 86400 + 23 * 3600;	--~
-				date_engine.milestone["NAXX"][1] = 18596 * 86400 + 23 * 3600;	--
-				date_engine.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][2] = 2;
-				date_engine.milestone["DarkMoon: Mulgore"][3] = 5;
-				date_engine.milestone["DarkMoon: Mulgore"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Mulgore"][5] = 7 * 86400 - 1;
-				date_engine.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][2] = 2;
-				date_engine.milestone["DarkMoon: Elwynn"][3] = 5;
-				date_engine.milestone["DarkMoon: Elwynn"][4] = 3 * 86400 + 4 * 3600;
-				date_engine.milestone["DarkMoon: Elwynn"][5] = 7 * 86400 - 1;
-				date_engine.milestone["Fishing Extravaganza"][1] = 1587304800;
-				date_engine.milestone["Warsong Gulch"][1] = 18334 * 86400;
-				date_engine.milestone["Arathi Basin"][1] = 18341 * 86400;
-				date_engine.milestone["Alterac Valley"][1] = 18355 * 86400;
-				for _, val in next, date_engine.milestone do
-					if val.local_time then
-						val[1] = val[1] - (8) * 3600;
-					end
-				end
-				date_engine.realmTimeZone = 8;
-				NS.set_time_zone();
-			end,
-		};
 		function date_engine.inst_next_reset(inst)
-			local val = date_engine.milestone[inst];
+			local val = NS.milestone[inst];
 			if val ~= nil then
 				if val.type == "fixed_cycle" then
 					return val[1] + floor((date_engine.time() + val[2] - val[1]) / val[2]) * val[2];
@@ -1521,9 +709,9 @@ do	--	MAIN
 						cell:ResetInstance();
 						local state = cell.state;
 						wipe(state);
-						for _, inst in ipairs(date_engine.milestone_list) do
+						for _, inst in ipairs(NS.milestone_list) do
 							if SET.inst_hash[inst] then
-								local val = date_engine.milestone[inst];
+								local val = NS.milestone[inst];
 								if val and val.phase <= curPhase then
 									local first_seen = val.dst and (val[1] - dst_ofs) or val[1];
 									local start_of_day_first_seen = date_engine.get_localized_start_of_day(first_seen);
@@ -1602,8 +790,8 @@ do	--	MAIN
 											if fit then
 												local day_check = (val[3] - ((row + SET.first_col_day - 1) % NUM_COL - D0 + 1) % NUM_COL + 1) % NUM_COL;
 												day_check = day_check == 0 and 7 or day_check;
-												local diff = (D0 - day_check) * 86400;-- + (to_ddate_engineate.timeZone - date_engine.realmTimeZone) * 3600;
-												local start_ofs = val[4] + (date_engine.timeZone - date_engine.realmTimeZone) * 3600;
+												local diff = (D0 - day_check) * 86400;-- + (to_ddate_engineate.timeZone - NS.realmTimeZone) * 3600;
+												local start_ofs = val[4] + (date_engine.timeZone - NS.realmTimeZone) * 3600;
 												if (diff + 86400 - 1) >= start_ofs and diff < (start_ofs + val[5]) then
 													if diff < (floor(start_ofs / 86400) * 86400 + 86400) then		--	the first day
 														if val.festival then
@@ -1710,7 +898,7 @@ do	--	MAIN
 			end
 			return earliest;
 		end
-		local instance_name_hash = __rt.__raid_meta.hash;
+		local instance_name_hash = __raidlib.__raid_meta.hash;
 		function NS.proc_locked_down_instance()
 			for _, inst in next, SET.raid_list do
 				wipe(VAR[inst]);
@@ -1849,10 +1037,10 @@ do	--	MAIN
 					GameTooltip:AddLine(date_engine.built_in_date(L.FORMAT_DATE_TODAY, now), 1.0, 1.0, 1.0);
 					local state = self.state;
 					local dst_ofs = SET.dst and 3600 or 0;
-					for _, inst in next, date_engine.milestone_list do
+					for _, inst in next, NS.milestone_list do
 						local s = state[inst];
 						if s then
-							local val = date_engine.milestone[inst];
+							local val = NS.milestone[inst];
 							local first_seen = val.dst and (val[1] - dst_ofs) or val[1];
 							if val.instance then
 								GameTooltip:AddDoubleLine(L.INSTANCE[inst] .. L.INSTANCE_RESET, date_engine.built_in_date(L.FORMAT_CLOCK, (first_seen % 86400)), 1.0, 1.0, 1.0);
@@ -2331,17 +1519,14 @@ do	--	MAIN
 
 				local prev = CreateFrame("BUTTON", nil, frame);
 				prev:SetSize(16, 16);
-				prev:SetNormalTexture(ui_style.texture_triangle);
-				prev:GetNormalTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+				prev:SetNormalTexture(ui_style.texture_arrowleft);
 				prev:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 				prev:GetNormalTexture():SetBlendMode("ADD");
-				prev:SetPushedTexture(ui_style.texture_triangle);
-				prev:GetPushedTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+				prev:SetPushedTexture(ui_style.texture_arrowleft);
 				prev:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 				prev:GetPushedTexture():SetBlendMode("ADD");
-				prev:SetHighlightTexture(ui_style.texture_triangle);
+				prev:SetHighlightTexture(ui_style.texture_arrowleft);
 				prev:GetHighlightTexture():SetAlpha(0.25);
-				prev:GetHighlightTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
 				prev:SetPoint("RIGHT", date_title_L, "LEFT", -6, 0);
 				prev:SetScript("OnClick", function()
 					local var = frame.var;
@@ -2355,13 +1540,13 @@ do	--	MAIN
 
 				local next = CreateFrame("BUTTON", nil, frame);
 				next:SetSize(16, 16);
-				next:SetNormalTexture(ui_style.texture_triangle);
+				next:SetNormalTexture(ui_style.texture_arrowright);
 				next:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 				next:GetNormalTexture():SetBlendMode("ADD");
-				next:SetPushedTexture(ui_style.texture_triangle);
+				next:SetPushedTexture(ui_style.texture_arrowright);
 				next:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 				next:GetPushedTexture():SetBlendMode("ADD");
-				next:SetHighlightTexture(ui_style.texture_triangle);
+				next:SetHighlightTexture(ui_style.texture_arrowright);
 				next:GetHighlightTexture():SetAlpha(0.25);
 				next:SetPoint("LEFT", date_title_R, "RIGHT", 6, 0);
 				next:SetScript("OnClick", function()
@@ -2441,14 +1626,11 @@ do	--	MAIN
 				local close = CreateFrame("BUTTON", nil, frame);
 				close:SetSize(20, 20);
 				close:SetNormalTexture(ui_style.texture_close);
-				close:GetNormalTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:SetPushedTexture(ui_style.texture_close);
-				close:GetPushedTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:GetPushedTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
 				close:SetHighlightTexture(ui_style.texture_close);
-				close:GetHighlightTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
-				close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2);
+				close:SetPoint("CENTER", frame, "TOPRIGHT", -11, -11);
 				close:SetScript("OnClick", function()
 					frame:Hide();
 				end);
@@ -2512,24 +1694,24 @@ do	--	MAIN
 
 				local call_board = CreateFrame("BUTTON", nil, frame);
 				call_board:SetSize(20, 20);
-				call_board:SetNormalTexture(ui_style.texture_triangle);
+				call_board:SetNormalTexture(ui_style.texture_arrowright);
 				call_board:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 				call_board:GetNormalTexture():SetBlendMode("ADD");
-				call_board:SetPushedTexture(ui_style.texture_triangle);
+				call_board:SetPushedTexture(ui_style.texture_arrowright);
 				call_board:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 				call_board:GetPushedTexture():SetBlendMode("ADD");
-				call_board:SetHighlightTexture(ui_style.texture_triangle);
+				call_board:SetHighlightTexture(ui_style.texture_arrowright);
 				call_board:GetHighlightTexture():SetAlpha(0.25);
 				call_board:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -28);
 				function call_board:Texture(bool)
 					if bool then
-						self:GetNormalTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowleft);
+						self:SetPushedTexture(ui_style.texture_arrowleft);
+						self:SetHighlightTexture(ui_style.texture_arrowleft);
 					else
-						self:GetNormalTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowright);
+						self:SetPushedTexture(ui_style.texture_arrowright);
+						self:SetHighlightTexture(ui_style.texture_arrowright);
 					end
 				end
 				call_board:Texture(false);
@@ -2730,7 +1912,7 @@ do	--	MAIN
 							button.collapse:SetTexture(ui_style.texture_expanded);
 						end
 						button.collapse:Show();
-						local val = date_engine.milestone[inst];
+						local val = NS.milestone[inst];
 						if val then
 							button.icon:SetTexture(val[6]);
 							if val[7] then
@@ -2944,14 +2126,11 @@ do	--	MAIN
 				local close = CreateFrame("BUTTON", nil, frame);
 				close:SetSize(20, 20);
 				close:SetNormalTexture(ui_style.texture_close);
-				close:GetNormalTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:SetPushedTexture(ui_style.texture_close);
-				close:GetPushedTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:GetPushedTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
 				close:SetHighlightTexture(ui_style.texture_close);
-				close:GetHighlightTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 				close:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
-				close:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -2);
+				close:SetPoint("CENTER", frame, "TOPLEFT", 11, -11);
 				close:SetScript("OnClick", function()
 					frame:Hide();
 				end);
@@ -2962,24 +2141,24 @@ do	--	MAIN
 
 				local call_calendar = CreateFrame("BUTTON", nil, frame);
 				call_calendar:SetSize(20, 20);
-				call_calendar:SetNormalTexture(ui_style.texture_triangle);
+				call_calendar:SetNormalTexture(ui_style.texture_arrowright);
 				call_calendar:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 				call_calendar:GetNormalTexture():SetBlendMode("ADD");
-				call_calendar:SetPushedTexture(ui_style.texture_triangle);
+				call_calendar:SetPushedTexture(ui_style.texture_arrowright);
 				call_calendar:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 				call_calendar:GetPushedTexture():SetBlendMode("ADD");
-				call_calendar:SetHighlightTexture(ui_style.texture_triangle);
+				call_calendar:SetHighlightTexture(ui_style.texture_arrowright);
 				call_calendar:GetHighlightTexture():SetAlpha(0.25);
 				call_calendar:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -28);
 				function call_calendar:Texture(bool)
 					if bool then
-						self:GetNormalTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowright);
+						self:SetPushedTexture(ui_style.texture_arrowright);
+						self:SetHighlightTexture(ui_style.texture_arrowright);
 					else
-						self:GetNormalTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowleft);
+						self:SetPushedTexture(ui_style.texture_arrowleft);
+						self:SetHighlightTexture(ui_style.texture_arrowleft);
 					end
 				end
 				call_calendar:Texture(false);
@@ -3018,24 +2197,24 @@ do	--	MAIN
 
 				local call_char_list = CreateFrame("BUTTON", nil, frame);
 				call_char_list:SetSize(20, 20);
-				call_char_list:SetNormalTexture(ui_style.texture_triangle);
+				call_char_list:SetNormalTexture(ui_style.texture_arrowright);
 				call_char_list:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 				call_char_list:GetNormalTexture():SetBlendMode("ADD");
-				call_char_list:SetPushedTexture(ui_style.texture_triangle);
+				call_char_list:SetPushedTexture(ui_style.texture_arrowright);
 				call_char_list:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 				call_char_list:GetPushedTexture():SetBlendMode("ADD");
-				call_char_list:SetHighlightTexture(ui_style.texture_triangle);
+				call_char_list:SetHighlightTexture(ui_style.texture_arrowright);
 				call_char_list:GetHighlightTexture():SetAlpha(0.25);
 				call_char_list:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 2, 4);
 				function call_char_list:Texture(bool)
 					if bool then
-						self:GetNormalTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowright);
+						self:SetPushedTexture(ui_style.texture_arrowright);
+						self:SetHighlightTexture(ui_style.texture_arrowright);
 					else
-						self:GetNormalTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetPushedTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-						self:GetHighlightTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+						self:SetNormalTexture(ui_style.texture_arrowleft);
+						self:SetPushedTexture(ui_style.texture_arrowleft);
+						self:SetHighlightTexture(ui_style.texture_arrowleft);
 					end
 				end
 				call_char_list:Texture(false);
@@ -3073,7 +2252,7 @@ do	--	MAIN
 					for _, key in next, SET.char_list do
 						local VAR = AVAR[key];
 						local var = VAR[inst];
-						local ms = date_engine.milestone[inst];
+						local ms = NS.milestone[inst];
 						if ms and ms.phase <= curPhase then
 							if (var and var[1]) or (SET.show_unlocked and VAR.PLAYER_LEVEL and VAR.PLAYER_LEVEL >= 60) or VAR.manual then
 								if add_head then
@@ -3450,14 +2629,11 @@ do	--	MAIN
 			local close = CreateFrame("BUTTON", nil, frame);
 			close:SetSize(20, 20);
 			close:SetNormalTexture(ui_style.texture_close);
-			close:GetNormalTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 			close:SetPushedTexture(ui_style.texture_close);
-			close:GetPushedTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 			close:GetPushedTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
 			close:SetHighlightTexture(ui_style.texture_close);
-			close:GetHighlightTexture():SetTexCoord(4 / 32, 28 / 32, 4 / 32, 28 / 32);
 			close:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
-			close:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -2, -2);
+			close:SetPoint("CENTER", frame, "TOPRIGHT", -11, -11);
 			close:SetScript("OnClick", function(self)
 				self.frame:Hide();
 			end);
@@ -3528,7 +2704,7 @@ do	--	MAIN
 				SET.inst_hash[self.key] = self:GetChecked();
 				NS.ui_update_calendar();
 			end
-			for _, key in next, SET.inst_list do
+			for _, key in next, NS.milestone_list do
 				local val = SET.inst_hash;
 				if px >= 4 then
 					px = 0;
@@ -3592,24 +2768,24 @@ do	--	MAIN
 
 					local call = CreateFrame("BUTTON", nil, frame);
 					call:SetSize(20, 20);
-					call:SetNormalTexture(ui_style.texture_triangle);
+					call:SetNormalTexture(ui_style.texture_arrowright);
 					call:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
 					call:GetNormalTexture():SetBlendMode("ADD");
-					call:SetPushedTexture(ui_style.texture_triangle);
+					call:SetPushedTexture(ui_style.texture_arrowright);
 					call:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
 					call:GetPushedTexture():SetBlendMode("ADD");
-					call:SetHighlightTexture(ui_style.texture_triangle);
+					call:SetHighlightTexture(ui_style.texture_arrowright);
 					call:GetHighlightTexture():SetAlpha(0.25);
 					call:SetPoint("TOPLEFT", 10 + 150 * 4 - 20, -25 - 25 * py);
 					function call:Texture(bool)
 						if bool then
-							self:GetNormalTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-							self:GetPushedTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
-							self:GetHighlightTexture():SetTexCoord(1.0, 0.0, 0.0, 1.0);
+							self:SetNormalTexture(ui_style.texture_arrowleft);
+							self:SetPushedTexture(ui_style.texture_arrowleft);
+							self:SetHighlightTexture(ui_style.texture_arrowleft);
 						else
-							self:GetNormalTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-							self:GetPushedTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
-							self:GetHighlightTexture():SetTexCoord(0.0, 1.0, 0.0, 1.0);
+							self:SetNormalTexture(ui_style.texture_arrowright);
+							self:SetPushedTexture(ui_style.texture_arrowright);
+							self:SetHighlightTexture(ui_style.texture_arrowright);
 						end
 					end
 					call:Texture(false);
@@ -3992,7 +3168,7 @@ do	--	MAIN
 					if LDI then
 						LDI:Register("alaCalendar",
 							{
-								icon = ARTWORK_PATH .. "ICON",
+								icon = ARTWORK_ICON_PATH,
 								OnClick = icon_OnClick,
 								text = L.DBIcon_Text,
 								OnTooltipShow = function(tt)
@@ -4026,7 +3202,7 @@ do	--	MAIN
 					if LDB then
 						local obj = LDB:NewDataObject("alacal", {
 							type = "launcher",
-							icon = ARTWORK_PATH .. "ICON",
+							icon = ARTWORK_ICON_PATH,
 							OnClick = icon_OnClick,
 							OnTooltipShow = function(tt)
 								tt:AddLine("alaCalendar");
@@ -4128,105 +3304,27 @@ do	--	INITIALIZE
 	else
 		default_set.dst = true;
 	end
-	local raid_list = {
-		"NAXX",
-		"TAQ",
-		"RAQ",
-		"BWL",
-		"ZG",
-		"MC",
-		"ONY",
-		-- "ala",
-	};
-	local instances_list = {
-		"NAXX",
-		"TAQ",
-		"RAQ",
-		"BWL",
-		"ZG",
-		"MC",
-		"ONY",
-		"Warsong Gulch",
-		"Arathi Basin",
-		"Alterac Valley",
-		"DarkMoon: Mulgore",
-		"DarkMoon: Elwynn",
-		"Fishing Extravaganza",
-	};
-	local instances_hash = {
-		["NAXX"] = true,
-		["TAQ"] = true,
-		["RAQ"] = true,
-		["BWL"] = true,
-		["ZG"] = true,
-		["MC"] = true,
-		["ONY"] = true,
-		["Warsong Gulch"] = true,
-		["Arathi Basin"] = true,
-		["Alterac Valley"] = true,
-		["DarkMoon: Mulgore"] = true,
-		["DarkMoon: Elwynn"] = true,
-		["Fishing Extravaganza"] = true,
-	};
 	local function MODIFY_SAVED_VARIABLE()
-		if alaCalendarSV then
-			if alaCalendarSV._version == nil then
-				alaCalendarSV._version = 0.0;
-			end
-			if alaCalendarSV._version < 200426.0 then
-				alaCalendarSV.set.collapsed = {  };
-				alaCalendarSV._version = 200426.0;
-			end
-			if alaCalendarSV._version < 200504.0 then
-				for GUID, VAR in next, alaCalendarSV.var do
-					VAR['ZG'] = VAR['ZG'] or VAR['ZUG'];
-					VAR['ZUG'] = nil;
-					VAR['ONY'] = VAR['ONY'] or VAR['ONYX'];
-					VAR['ONYX'] = nil;
-					for _, inst in next, raid_list do
-						if VAR[inst] == nil then
-							VAR[inst] = {  };
-						end
-					end
-				end
-				alaCalendarSV.set.raid_list = Mixin({  }, raid_list);
-				alaCalendarSV.set.inst_hash = Mixin({  }, instances_hash);
-				alaCalendarSV.set.char_list = nil;
-				alaCalendarSV._version = 200504.0;
-			end
-			if alaCalendarSV._version < 200513.0 then
-				local char_list = {  };
-				for GUID, VAR in next, alaCalendarSV.var do
-					tinsert(char_list, GUID);
-				end
-				alaCalendarSV.set.char_list = char_list;
-				alaCalendarSV.set.hide_calendar_on_esc = true;
-				alaCalendarSV.set.hide_board_on_esc = true;
-				alaCalendarSV.set.raid_list = alaCalendarSV.set.inst_list;
-				alaCalendarSV.set.inst_list = Mixin({  }, instances_list);
-				alaCalendarSV._version = 200513.0;
-			end
-			if alaCalendarSV._version < 200520.0 then
-				if alaCalendarSV.set.region ~= nil then
-					if alaCalendarSV.set.region >= 2 then
-						alaCalendarSV.set.region = min(alaCalendarSV.set.region + 1, 6);
-					end
-				end
-				alaCalendarSV._version = 200520.0;
-			end
-		else
+		if alaCalendarSV == nil or alaCalendarSV._version == nil or alaCalendarSV._version < 210606.01 then
 			_G.alaCalendarSV = {
 				set = {
-					raid_list = Mixin({  }, raid_list),
-					inst_list = Mixin({  }, instances_list),
-					inst_hash = Mixin({  }, instances_hash),
+					raid_list = Mixin({  }, NS.raid_list),
+					inst_hash = Mixin({  }, NS.instances_hash),
 					char_list = {  },
 					collapsed = {  },
 				},
 				var = {  },
 			};
+		elseif alaCalendarSV._version < 210610.01 then
+			for GUID, VAR in next, alaCalendarSV.var do
+				for _, inst in next, NS.raid_list do
+					if VAR[inst] == nil then
+						VAR[inst] = {  };
+					end
+				end
+			end
 		end
-		alaCalendarSV._version = 200520.0;
+		alaCalendarSV._version = 210610.01;
 		SET = setmetatable(alaCalendarSV.set, { __index = default_set, });
 		AVAR = alaCalendarSV.var;
 		VAR = AVAR[PLAYER_GUID];
@@ -4236,30 +3334,22 @@ do	--	INITIALIZE
 		end
 		VAR.PLAYER_LEVEL = UnitLevel('player');
 		do	--	VALIDATE
-			Mixin(SET.raid_list, raid_list);
+			Mixin(SET.raid_list, NS.raid_list);
 			for index = #SET.raid_list, 1, -1 do
 				local inst = SET.raid_list[index];
-				if instances_hash[inst] == nil then
+				if NS.instances_hash[inst] == nil then
 					tremove(SET.raid_list, index);
 				end
 			end
 			--
-			Mixin(SET.inst_list, instances_list);
-			for index = #SET.inst_list, 1, -1 do
-				local inst = SET.inst_list[index];
-				if instances_hash[inst] == nil then
-					tremove(SET.inst_list, index);
-				end
-			end
-			--
-			-- Mixin(SET.inst_hash, instances_hash);
-			for inst, v in next, instances_hash do
+			-- Mixin(SET.inst_hash, NS.instances_hash);
+			for inst, v in next, NS.instances_hash do
 				if SET.inst_hash[inst] == nil then
 					SET.inst_hash[inst] = v;
 				end
 			end
 			for inst, v in next, SET.inst_hash do
-				if instances_hash[inst] == nil then
+				if NS.instances_hash[inst] == nil then
 					SET.inst_hash[inst] = nil;
 				end
 			end
@@ -4303,7 +3393,6 @@ do	--	INITIALIZE
 		if __ala_meta__.initpublic then __ala_meta__.initpublic(); end
 	end
 	function NS.reset_all_settings()
-		alaCalendarSV = nil;
 		_G.alaCalendarSV = nil;
 		MODIFY_SAVED_VARIABLE();
 		NS.init_time_zone();
@@ -4835,3 +3924,52 @@ do	--	DEV
 		NS.date_engine.date = NS.date_engine.built_in_date;
 	end
 end
+
+
+--	something else
+	local buttons = {  };
+	for i = 1, MAX_RAID_INFOS do
+		local b = _G["RaidInfoInstance" .. i];
+		buttons[i] = b;
+		b:EnableMouse(true);
+		b.__ID = i;
+		b.__HL = b:CreateTexture(nil, "OVERLAY");
+		b.__HL:SetAllPoints();
+		b.__HL:SetColorTexture(1.0, 0.75, 0.5, 0.25);
+		b.__HL:SetBlendMode("ADD");
+		b.__HL:Hide();
+		b:SetScript("OnEnter", function(self)
+			self.__HL:Show();
+			if self.__ID <= GetNumSavedInstances() then
+				local name, id, reset, difficulty, locked, extended, instanceIDMostSig, isRaid, maxPlayers, difficultyName, numEncounters, encounterProgress = GetSavedInstanceInfo(self.__ID);
+				if name ~= nil then
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+					GameTooltip:AddDoubleLine(name, id, 1.0, 1.0, 1.0, 0.35, 0.35, 0.35);
+					if locked then
+						GameTooltip:AddLine(RESETS_IN .. " " .. SecondsToTime(reset), 0.5, 0.5, 0.5);
+						GameTooltip:AddLine(" ");
+						-- var[1] = id;
+						-- var[2] = t;
+						-- var[3] = numEncounters;
+						-- var[4] = encounterProgress;
+						for encounterIndex = 1, numEncounters do
+							local bossName, fileDataID, isKilled, unknown4 = GetSavedInstanceEncounterInfo(self.__ID, encounterIndex);
+							-- var[4 + encounterIndex * 2 - 1] = bossName;
+							-- var[4 + encounterIndex * 2] = isKilled;
+							if isKilled then
+								GameTooltip:AddDoubleLine(bossName, BOSS_DEAD, 0.875, 0.875, 0.875, 1.0, 0.0, 0.0);
+							else
+								GameTooltip:AddDoubleLine(bossName, BOSS_ALIVE, 0.875, 0.875, 0.875, 0.0, 1.0, 0.0);
+							end
+						end
+					end
+					GameTooltip:Show();
+				end
+			end
+		end);
+		b:SetScript("OnLeave", function(self)
+			self.__HL:Hide();
+			GameTooltip:Hide();
+		end);
+	end
+--
