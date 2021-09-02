@@ -52,7 +52,7 @@ NS.milestone = {
 		--	BG	Warsong Gulch & Alterac Valley	--	UTC-8	2019-12-12-Thu
 		--	P3	BWL								--	Global Time	--	UTC-8	2020-2-13-Thu-7:00	PST	2020-2-12-15:00	EST	2020-2-12:18:00
 		["BWL"] = {
-			phase = 3,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -70,7 +70,7 @@ NS.milestone = {
 		--	BG	Arathi Basin		--	UTC-8	2020-3-12-Thu
 		--	P4	ZG, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
 		["ZG"] = {
-			phase = 4,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			3 * 86400,
@@ -87,7 +87,7 @@ NS.milestone = {
 		},
 		--	P5
 		["TAQ"] = {
-			phase = 5,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -103,7 +103,7 @@ NS.milestone = {
 			instance = true,
 		},
 		["RAQ"] = {
-			phase = 5,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			3 * 86400,
@@ -120,7 +120,7 @@ NS.milestone = {
 		},
 		--	P6
 		["NAXX"] = {
-			phase = 6,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -138,7 +138,7 @@ NS.milestone = {
 	--	TBC
 		--	P1
 		["Kara"] = {
-			phase = 6,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -154,7 +154,7 @@ NS.milestone = {
 			instance = true,
 		},
 		["Magtheridon"] = {
-			phase = 6,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -170,7 +170,7 @@ NS.milestone = {
 			instance = true,
 		},
 		["Gruul"] = {
-			phase = 6,
+			phase = 1,
 			type = "fixed_cycle",
 			-1,
 			7 * 86400,
@@ -189,11 +189,11 @@ NS.milestone = {
 	--	Festival
 	--	P3	DarkMoon			--	UTC-8	2020-2-7
 	["DarkMoon: Terokkar"] = {
-		phase = 3,
+		phase = 1,
 		type = "month_week_day",
 		dst = true,
 		-1,
-		2,
+		3,
 		5,
 		3 * 86400 + 4 * 3600,
 		7 * 86400 - 1,
@@ -206,11 +206,11 @@ NS.milestone = {
 		festival = true,
 	},
 	["DarkMoon: Mulgore"] = {
-		phase = 3,
+		phase = 1,
 		type = "month_week_day",
 		dst = true,
 		-1,
-		2,
+		3,
 		5,
 		3 * 86400 + 4 * 3600,
 		7 * 86400 - 1,
@@ -223,11 +223,11 @@ NS.milestone = {
 		festival = true,
 	},
 	["DarkMoon: Elwynn"] = {
-		phase = 3,
+		phase = 1,
 		type = "month_week_day",
 		dst = true,
 		-1,
-		2,
+		3,
 		5,
 		3 * 86400 + 4 * 3600,
 		7 * 86400 - 1,
@@ -241,7 +241,7 @@ NS.milestone = {
 	},
 	--	P4	Fishing Extravaganza
 	["Fishing Extravaganza"] = {
-		phase = 4,
+		phase = 1,
 		type = "fixed_cycle",
 		dst = true,
 		-1,
@@ -260,7 +260,7 @@ NS.milestone = {
 	},
 	--	Server Time	--	03-13	04-10	05-08	Warsong Gulch
 	["Warsong Gulch"] = {
-		phase = 3,
+		phase = 1,
 		type = "fixed_cycle",
 		dst = true,
 		-1,
@@ -279,7 +279,7 @@ NS.milestone = {
 	},
 	--	Server Time	--	03-20	04-17	05-15	Arathi Basin
 	["Arathi Basin"] = {
-		phase = 3,
+		phase = 1,
 		type = "fixed_cycle",
 		dst = true,
 		-1,
@@ -299,7 +299,7 @@ NS.milestone = {
 	--	Server Time	--	03-27	04-24	05-22	None
 	--	Server Time	--	04-03	05-01	05-29	Alterac Valley
 	["Alterac Valley"] = {
-		phase = 3,
+		phase = 1,
 		type = "fixed_cycle",
 		dst = true,
 		-1,
@@ -317,7 +317,7 @@ NS.milestone = {
 		curtain_channel2 = true,
 	},
 	["Eye of the Storm"] = {
-		phase = 3,
+		phase = 1,
 		type = "fixed_cycle",
 		dst = true,
 		-1,
@@ -553,4 +553,54 @@ NS.instances_hash = {
 	["DarkMoon: Mulgore"] = true,
 	["DarkMoon: Elwynn"] = true,
 	["Fishing Extravaganza"] = true,
+};
+
+NS.DailyQuests = {
+	MonitoredNPC = {
+		["24370"] = true,
+		["24369"] = true,
+		["24393"] = true,
+		["25580"] = true,
+	},
+	N = {	--	24370
+		[11364] = { "悬赏：碎手百夫长", 3714, },		--	破碎大厅
+		[11371] = { "悬赏：盘牙侍从", 3715, },			--	蒸汽地窟
+		[11376] = { "悬赏：恶毒导师", 3789, },			--	暗影迷宫
+		[11383] = { "悬赏：裂隙领主", 2366, },			--	黑色沼泽
+		[11385] = { "悬赏：寻日者导魔者", 3847, },		--	生态船
+		[11387] = { "悬赏：风暴锻铸摧毁者", 3849, },	--	能源舰
+		[11389] = { "悬赏：禁魔监狱斥候", 3848, },		--	禁魔监狱	3846, 3848
+		[11500] = { "悬赏：痛苦妖女", 4131, },			--	魔导师平台	4095, 4131
+	},
+	H = {	--	24369
+		[11354] = { "悬赏：纳杉的骑鞭", 3562, },		--	地狱火城墙
+		[11362] = { "悬赏：克里丹的羽饰法杖", 3713, },	--	鲜血熔炉
+		[11363] = { "悬赏：刃拳的印记", 3714, },		--	破碎大厅
+		[11368] = { "悬赏：夸格米拉之心", 3717, },		--	奴隶围栏
+		[11369] = { "悬赏：黑色阔步者的卵", 3716, },	--	幽暗沼泽
+		[11370] = { "悬赏：督军的论文", 3715, },		--	蒸汽地窟
+		[11372] = { "悬赏：艾吉斯的冠羽", 3791, },		--	塞泰克大厅
+		[11373] = { "悬赏：沙法尔的精致饰物", 3792, },	--	法力陵墓
+		[11374] = { "悬赏：主教的灵魂宝钻", 3790, },	--	奥金尼地穴
+		[11375] = { "悬赏：摩摩尔的低语", 3789, },		--	暗影迷宫
+		[11378] = { "悬赏：时空猎手的头颅", 2367, },	--	旧希尔斯布莱德丘陵
+		[11382] = { "悬赏：埃欧努斯的沙漏", 2366, },	--	黑色沼泽
+		[11384] = { "悬赏：扭木碎片", 3847, },			--	生态船
+		[11386] = { "悬赏：帕萨雷恩的投影仪", 3849, },	--	能源舰
+		[11388] = { "悬赏：斯克瑞斯的卷轴", 3848, },	--	禁魔监狱	3846, 3848
+		[11499] = { "悬赏：凯尔萨斯王子的徽记之戒", 4131, },	--	魔导师平台	4095, 4131
+	},
+	C = {	--	24393
+		[11377] = { "甜美的复仇", },
+		[11379] = { "超级美味烧烤", },
+		[11380] = { "魔法美味", },
+		[11381] = { "灵魂之汤", },
+	},
+	F = {	--	25580
+		[11665] = { "城中的鳄鱼", },
+		[11666] = { "黑鳞镖鲈", },
+		[11667] = { "世界上最大的泥鱼", },
+		[11668] = { "巨型淡水虾", },
+		[11669] = { "魔血鲷鱼", },
+	},
 };

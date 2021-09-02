@@ -50,6 +50,17 @@ local curPhase = 6;
 	local SendAddonMessage = SendAddonMessage or C_ChatInfo.SendAddonMessage;
 	local SendAddonMessageLogged = SendAddonMessageLogged or C_ChatInfo.SendAddonMessageLogged;
 	--------------------------------------------------
+	local Ambiguate = Ambiguate;
+	local C_Map = C_Map;
+	local C_QuestLog = C_QuestLog;
+	local GetGossipAvailableQuests = GetGossipAvailableQuests;
+	local UnitGUID = UnitGUID;
+	local GetQuestID = GetQuestID;
+	local IsInRaid, IsInGroup = IsInRaid, IsInGroup;
+	local GetGuildInfo = GetGuildInfo;
+	local LE_PARTY_CATEGORY_HOME, LE_PARTY_CATEGORY_INSTANCE = LE_PARTY_CATEGORY_HOME, LE_PARTY_CATEGORY_INSTANCE;
+	local GetDailyQuestsCompleted, GetMaxDailyQuests = GetDailyQuestsCompleted, GetMaxDailyQuests;
+	--------------------------------------------------
 	local RAID_CLASS_COLORS = RAID_CLASS_COLORS;
 	local CLASS_ICON_TCOORDS = CLASS_ICON_TCOORDS;
 	local _ = nil;
@@ -197,9 +208,10 @@ L.INSTANCE = __raidlib.__raid_meta.L[LOCALE] or __raidlib.__raid_meta.L['*'];
 
 local ARTWORK_ICON_PATH = "Interface\\AddOns\\alaCalendar\\ARTWORK\\ICON";
 ---------------------------------------------------------------------------------------------------
-local AVAR, VAR, SET = nil, nil, nil;
+local AVAR, VAR, SET, DLY = nil, nil, nil, nil;
 local gui = {  };
 
+local PLAYER_NAME = UnitName('player');
 local PLAYER_REALM_ID = tonumber(GetRealmID());
 local PLAYER_REALM_NAME = GetRealmName();
 local PLAYER_GUID = UnitGUID('player');
@@ -2986,11 +2998,12 @@ do	--	MAIN
 		end
 	end
 
+	local ADDON_PREFIX = "ALACAL";
+	local ADDON_MSG_CONTROL_CODE_LEN = 6;
+	local ADDON_MSG_QUERY = "_q_cal";
+	local ADDON_MSG_REPLY = "_r_cal";
+	local ADDON_MSG_BCMDAILY = "_b_dly";
 	do	--	comm
-		local ADDON_PREFIX = "ALACAL";
-		local ADDON_MSG_CONTROL_CODE_LEN = 6;
-		local ADDON_MSG_QUERY = "_q_cal";
-		local ADDON_MSG_REPLY = "_r_cal";
 		--	GUID#INST# index-count #id#t#numEncounters#encounterProgress#bossName#isKilled
 		local function encode_data(cache, max_len, GUID, inst, var)
 			if var and var[1] then
@@ -3047,7 +3060,42 @@ do	--	MAIN
 			end
 			return false;
 		end
+		local function save_daily(isCal, Normal, Heroic, Cooking, Fishing)
+			if DLY[1] == nil or DLY[1][1] == nil or (DLY[1][2] ~= 'npc' and isCal) then
+				if Normal ~= nil then
+					Normal = tonumber(Normal);
+					if Normal ~= nil and Normal > 0 then
+						DLY[1] = { Normal, 'comm', };
+					end
+				end
+			end
+			if DLY[2] == nil or DLY[2][1] == nil or (DLY[2][2] ~= 'npc' and isCal) then
+				if Heroic ~= nil then
+					Heroic = tonumber(Heroic);
+					if Heroic ~= nil and Heroic > 0 then
+						DLY[2] = { Heroic, 'comm', };
+					end
+				end
+			end
+			if DLY[3] == nil or DLY[3][1] == nil or (DLY[3][2] ~= 'npc' and isCal) then
+				if Cooking ~= nil then
+					Cooking = tonumber(Cooking);
+					if Cooking ~= nil and Cooking > 0 then
+						DLY[3] = { Cooking, 'comm', };
+					end
+				end
+			end
+			if DLY[4] == nil or DLY[4][1] == nil or (DLY[4][2] ~= 'npc' and isCal) then
+				if Fishing ~= nil then
+					Fishing = tonumber(Fishing);
+					if Fishing ~= nil and Fishing > 0 then
+						DLY[4] = { Fishing, 'comm', };
+					end
+				end
+			end
+		end
 		function NS.CHAT_MSG_ADDON(prefix, msg, channel, sender, target, zoneChannelID, localID, name, instanceID)
+			--[==[
 			if prefix == ADDON_PREFIX then
 				local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
 				local name, realm = strsplit("-", sender);
@@ -3067,12 +3115,225 @@ do	--	MAIN
 				elseif control_code == ADDON_MSG_REPLY then
 				end
 			end
+			--]==]
+			sender = Ambiguate(sender, 'none');
+			if sender ~= PLAYER_NAME then
+				if prefix == ADDON_PREFIX then
+					local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
+					if control_code == ADDON_MSG_BCMDAILY then
+						local _, reset, Normal, Heroic, Cooking, Fishing = strsplit("#", msg);
+						if reset ~= nil and reset ~= "" then
+							reset = tonumber(reset);
+							if reset ~= nil then
+								if abs(reset - DLY.reset) < 1800 then
+									save_daily(true, Normal, Heroic, Cooking, Fishing);
+								end
+							end
+						end
+					end
+				elseif prefix == "REPUTABLE" then
+					local action, version, Normal, _, Heroic, _, Cooking, _, Fishing, _, PvP, _ = strsplit(":", msg);
+					if action ~= nil then
+						save_daily(false, Normal, Heroic, Cooking, Fishing);
+					end
+				end
+			end
 		end
 		NS.CHAT_MSG_ADDON_LOGGED = NS.CHAT_MSG_ADDON;
 		function NS.cmm_InitAddonMessage()
-			if RegisterAddonMessagePrefix(ADDON_PREFIX) then
+			local r1, r2 = RegisterAddonMessagePrefix(ADDON_PREFIX), RegisterAddonMessagePrefix("REPUTABLE");
+			if r1 or r2 then
 				_EventHandler:RegEvent("CHAT_MSG_ADDON");
 				_EventHandler:RegEvent("CHAT_MSG_ADDON_LOGGED");
+			end
+		end
+	end
+
+	do	--	daily
+		local LT_DailyInfo = {  };
+		local LT_QuestCompleted = {  };
+		local LT_QuestName2ID = {  };
+		local LT_ValidNPC = nil;
+		local LT_BCMCD = {
+			GROUP = GetServerTime() - 8,
+			GUILD = GetServerTime() - 8,
+			YELL = GetServerTime() - 16,
+		};
+		local function GetCalMessage()
+			-- local reputable = "send:1.27-bcc";
+			local alacal = ADDON_MSG_BCMDAILY .. "#" .. DLY.reset;
+			for index = 1, 4 do
+				local D = DLY[index];
+				if D ~= nil and D[1] ~= nil then
+					-- reputable = reputable .. ":" .. D[1] .. ":" .. GetQuestResetTime();
+					alacal = alacal .. "#" .. D[1];
+				else
+					-- reputable = reputable .. "::";
+					alacal = alacal .. "#";
+				end
+			end
+			-- reputable = reputable .. "::";
+			return alacal;
+		end
+		local function PeriodicCheck()
+			if DLY[1] ~= nil or DLY[2] ~= nil or DLY[3] ~= nil or DLY[4] ~= nil then
+				local now = GetServerTime();
+				if DLY.reset < now then
+					wipe(DLY);
+					DLY.reset = now + GetQuestResetTime();
+				else
+					local calmsg = nil;
+					if LT_BCMCD.GROUP < now then
+						LT_BCMCD.GROUP = now + 16;
+						calmsg = calmsg or GetCalMessage();
+						if IsInRaid(LE_PARTY_CATEGORY_HOME) then
+							SendAddonMessage(ADDON_PREFIX, calmsg, "RAID");
+						elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+							SendAddonMessage(ADDON_PREFIX, calmsg, "PARTY");
+						-- elseif IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then	--	not allowed in classic and bcc
+						-- 	SendAddonMessage(ADDON_PREFIX, calmsg, "INSTANCE_CHAT");
+						end
+					end
+					if LT_BCMCD.GUILD < now then
+						LT_BCMCD.GUILD = now + 16;
+						calmsg = calmsg or GetCalMessage();
+						if GetGuildInfo('player') ~= nil then
+							SendAddonMessage(ADDON_PREFIX, calmsg, "GUILD");
+						end
+					end
+					if LT_BCMCD.YELL < now then
+						LT_BCMCD.YELL = now + 32;
+						calmsg = calmsg or GetCalMessage();
+						SendAddonMessage(ADDON_PREFIX, calmsg, "YELL");
+					end
+				end
+			end
+		end
+		function NS.init_daily()
+			if NS.DailyQuests ~= nil then
+				local list = NS.DailyQuests.N;
+				for id, val in next, list do
+					local name = C_QuestLog.GetQuestInfo(id) or val[1];
+					local area = C_Map.GetAreaInfo(val[2]);
+					LT_DailyInfo[id] = { DUNGEON_DIFFICULTY1 or "Normal", area, 1, };
+					LT_QuestName2ID[name] = id;
+					-- print(id, name)
+				end
+				local list = NS.DailyQuests.H;
+				for id, val in next, list do
+					local name = C_QuestLog.GetQuestInfo(id) or val[1];
+					local area = C_Map.GetAreaInfo(val[2]);
+					LT_DailyInfo[id] = { DUNGEON_DIFFICULTY2 or "Heroic", area, 2, };
+					LT_QuestName2ID[name] = id;
+					-- print(id, name)
+				end
+				local list = NS.DailyQuests.C;
+				for id, val in next, list do
+					local name = C_QuestLog.GetQuestInfo(id) or val[1];
+					LT_DailyInfo[id] = { PROFESSIONS_COOKING or "Cooking", name, 3, };
+					LT_QuestName2ID[name] = id;
+					-- print(id, name)
+				end
+				local list = NS.DailyQuests.F;
+				for id, val in next, list do
+					local name = C_QuestLog.GetQuestInfo(id) or val[1];
+					LT_DailyInfo[id] = { PROFESSIONS_FISHING or "Fishing", name, 4, };
+					LT_QuestName2ID[name] = id;
+					-- print(id, name)
+				end
+				LT_ValidNPC = NS.DailyQuests.MonitoredNPC;
+				--
+				local now = GetServerTime();
+				if DLY.reset ~= nil and DLY.reset < now then
+					wipe(DLY);
+				else
+					for index = 1, 4 do
+						if DLY[index] ~= nil and DLY[index][1] <= 0 then
+							DLY[index] = nil;
+						end
+					end
+				end
+				DLY.reset = now + GetQuestResetTime();
+				--
+				local completed = GetQuestsCompleted();
+				for id, info in next, LT_DailyInfo do
+					LT_QuestCompleted[id] = completed[id];
+				end
+				--
+				_EventHandler:RegEvent("GOSSIP_SHOW");
+				_EventHandler:RegEvent("QUEST_DETAIL");
+				_EventHandler:RegEvent("QUEST_TURNED_IN");
+				--
+				C_Timer.NewTicker(4, PeriodicCheck);
+			else
+				NS.AddDailyInfo = function() end
+			end
+		end
+		local function ProcQuests(...)
+			local num = select("#", ...) / 7;
+			num = num - num % 1.0;
+			for index = 1, num do
+				local name = select(index * 7 - 6, ...);
+				local id = LT_QuestName2ID[name];
+				if id ~= nil and LT_DailyInfo[id] ~= nil then
+					local info = LT_DailyInfo[id];
+					DLY[info[3]] = { id, 'npc', };
+					-- print('add', id, name);
+				end
+			end
+		end
+		function NS.GOSSIP_SHOW()
+			local GUID = UnitGUID('npc');
+			if GUID ~= nil then
+				local _, _, _, _, _, id = strsplit("-", GUID);
+				if LT_ValidNPC[id] then
+					ProcQuests(GetGossipAvailableQuests());
+				end
+			end
+		end
+		function NS.QUEST_DETAIL()
+			local GUID = UnitGUID('npc');
+			if GUID ~= nil then
+				local _, _, _, _, _, id = strsplit("-", GUID);
+				if LT_ValidNPC[id] then
+					local id = GetQuestID();
+					local info = LT_DailyInfo[id];
+					if info ~= nil then
+						DLY[info[3]] = { id, 'npc', };
+						-- print('add', id, info[2])
+					end
+				end
+			end
+		end
+		function NS.QUEST_TURNED_IN(id)
+			-- print(id, LT_DailyInfo[id], LT_QuestCompleted[id])
+			if LT_DailyInfo[id] ~= nil then
+				LT_QuestCompleted[id] = true;
+			end
+		end
+		local DONE = DONE or "DONE";
+		local DAILY = DAILY or QUESTS_LABEL or "Daily";
+		local RESETS_IN = RESETS_IN or "Reset in "
+		function NS.AddDailyInfo(Tooltip)
+			local got = false;
+			Tooltip:AddDoubleLine(DAILY, GetDailyQuestsCompleted() .. " / " ..  GetMaxDailyQuests(), 1, 1, 0, 1, 1, 1);
+			for index = 1, 4 do
+				local D = DLY[index];
+				if D ~= nil and D[1] ~= nil then
+					if got == false then
+						got = true;
+						Tooltip:AddDoubleLine(RESETS_IN, NS.seconds_to_colored_formatted_time_len(GetQuestResetTime()), 1, 1, 0, 1, 1, 1);
+					end
+					local info = LT_DailyInfo[D[1]];
+					if LT_QuestCompleted[D[1]] then
+						Tooltip:AddDoubleLine(info[1] .. "(" .. DONE .. ")", info[2], 0, 1, 0, 1, 1, 1);
+					else
+						Tooltip:AddDoubleLine(info[1], info[2], 1, 0, 0, 1, 1, 1);
+					end
+				end
+			end
+			if got then
+				Tooltip:AddLine(" ");
 			end
 		end
 	end
@@ -3114,6 +3375,7 @@ do	--	MAIN
 				if GameTimeFrame_UpdateTooltip then
 					hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
 						GameTooltip:AddLine(" ");
+						NS.AddDailyInfo(GameTooltip);
 						for _, text in next, L.TooltipLines do
 							GameTooltip:AddLine(text);
 						end
@@ -3174,6 +3436,7 @@ do	--	MAIN
 								OnTooltipShow = function(tt)
 										tt:AddLine("alaCalendar");
 										tt:AddLine(" ");
+										NS.AddDailyInfo(tt);
 										for _, text in next, L.TooltipLines do
 											tt:AddLine(text);
 										end
@@ -3314,6 +3577,7 @@ do	--	INITIALIZE
 					collapsed = {  },
 				},
 				var = {  },
+				daily = {  };
 			};
 		elseif alaCalendarSV._version < 210610.01 then
 			for GUID, VAR in next, alaCalendarSV.var do
@@ -3323,11 +3587,25 @@ do	--	INITIALIZE
 					end
 				end
 			end
+			alaCalendarSV.daily = {  };
+		elseif alaCalendarSV._version < 210828.01 then
+			alaCalendarSV.daily = {  };
 		end
-		alaCalendarSV._version = 210610.01;
+		alaCalendarSV._version = 210828.01;
+		--
+		alaCalendarSV.set = alaCalendarSV.set or {
+			raid_list = Mixin({  }, NS.raid_list),
+			inst_hash = Mixin({  }, NS.instances_hash),
+			char_list = {  },
+			collapsed = {  },
+		};
+		alaCalendarSV.var = alaCalendarSV.var or {  };
+		alaCalendarSV.daily = alaCalendarSV.daily or {  };
+		--
 		SET = setmetatable(alaCalendarSV.set, { __index = default_set, });
 		AVAR = alaCalendarSV.var;
 		VAR = AVAR[PLAYER_GUID];
+		DLY = alaCalendarSV.daily;
 		if VAR == nil then
 			VAR = NS.init_var({ PLAYER_LEVEL = UnitLevel('player'), realm_id = PLAYER_REALM_ID, realm_name = PLAYER_REALM_NAME, });
 			NS.add_char(PLAYER_GUID, VAR, true);
@@ -3390,6 +3668,9 @@ do	--	INITIALIZE
 		NS.init_regEvent();
 		NS.init_createGUI();
 		NS.init_instance();
+		NS.cmm_InitAddonMessage();
+		NS.init_daily();
+		--
 		if __ala_meta__.initpublic then __ala_meta__.initpublic(); end
 	end
 	function NS.reset_all_settings()
