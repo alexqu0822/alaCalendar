@@ -66,10 +66,10 @@ local curPhase = 6;
 	local CLASS_ICON_TCOORDS = CLASS_ICON_TCOORDS;
 	local _ = nil;
 	local function _log_(...)
-		print(date('\124cff00ff00%H:%M:%S\124r'), ...);
+		print(date('\124cff00ffff%H:%M:%S\124r cal'), ...);
 	end
 	local function _error_(header, child, ...)
-		print(date('\124cffff0000%H:%M:%S\124r'), header, child, ...);
+		print(date('\124cffff0000%H:%M:%S\124r cal'), header, child, ...);
 		if alaCalendarSV then
 			local err = alaCalendarSV.err;
 			if not err then
@@ -220,6 +220,7 @@ local FLAG_NPC = -9;
 local FLAG_ALA = -1;
 local FLAG_MAX_CREDIBLE = 0;
 local FLAG_REP = 1;
+local FLAG_MAX = 9;
 
 local function info_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
@@ -3008,7 +3009,8 @@ do	--	MAIN
 	local ADDON_MSG_QUERY = "_q_cal";
 	local ADDON_MSG_REPLY = "_r_cal";
 	local ADDON_MSG_BCMDAILY_ = "_b_dly";
-	local ADDON_MSG_BCMDAILY = "_b_dl2";
+	local ADDON_MSG_BCMDAILY__ = "_b_dl2";
+	local ADDON_MSG_BCMDAILY = "_b_dl3";
 	do	--	comm
 		--	GUID#INST# index-count #id#t#numEncounters#encounterProgress#bossName#isKilled
 		local function encode_data(cache, max_len, GUID, inst, var)
@@ -3096,23 +3098,59 @@ do	--	MAIN
 						local _, reset, Normal, Heroic, Cooking, Fishing = strsplit("#", msg);
 						if reset ~= nil and reset ~= "" then
 							reset = tonumber(reset);
-							if reset ~= nil then
-								NS.DailyOnComm(reset, 9, Normal, 9, Heroic, 9, Cooking, 9, Fishing, channel, sender);
+							if reset ~= nil and reset > 0 then
+								NS.DailyOnComm(
+									reset,
+									FLAG_MAX, Normal,
+									FLAG_MAX, Heroic,
+									FLAG_MAX, Cooking,
+									FLAG_MAX, Fishing,
+									channel, sender
+								);
+							end
+						end
+					elseif control_code == ADDON_MSG_BCMDAILY__ then
+						local _, reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing = strsplit("#", msg);
+						if reset ~= nil and reset ~= "" then
+							reset = tonumber(reset);
+							if reset ~= nil and reset > 0 then
+								NS.DailyOnComm(
+									reset,
+									FLAG_MAX, Normal,
+									FLAG_MAX, Heroic,
+									FLAG_MAX, Cooking,
+									FLAG_MAX, Fishing,
+									channel, sender
+								);
 							end
 						end
 					elseif control_code == ADDON_MSG_BCMDAILY then
 						local _, reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing = strsplit("#", msg);
 						if reset ~= nil and reset ~= "" then
 							reset = tonumber(reset);
-							if reset ~= nil then
-								NS.DailyOnComm(reset, NSeq ~= "" and NSeq or 9, Normal, HSeq ~= "" and HSeq or 9, Heroic, CSeq ~= "" and CSeq or 9, Cooking, FSeq ~= "" and FSeq or 9, Fishing, channel, sender);
+							if reset ~= nil and reset > 0 then
+								NS.DailyOnComm(
+									reset,
+									NSeq, Normal,
+									HSeq, Heroic,
+									CSeq, Cooking,
+									FSeq, Fishing,
+									channel, sender
+								);
 							end
 						end
 					end
 				elseif prefix == "REPUTABLE" then
 					local action, version, Normal, _, Heroic, _, Cooking, _, Fishing, _, PvP, _ = strsplit(":", msg);
 					if action ~= nil then
-						NS.DailyOnComm(nil, false, Normal, false, Heroic, false, Cooking, false, Fishing, channel, sender);
+						NS.DailyOnComm(
+							nil,
+							FLAG_REP, Normal,
+							FLAG_REP, Heroic,
+							FLAG_REP, Cooking,
+							FLAG_REP, Fishing,
+							channel, sender
+						);
 					end
 				end
 			end
@@ -3146,10 +3184,10 @@ do	--	MAIN
 				local D = DLY[index];
 				if D ~= nil and D[1] ~= nil then
 					-- reputable = reputable .. ":" .. D[1] .. ":" .. GetQuestResetTime();
-					alacal = alacal .. "#" .. (D[2] or 9) .. "#" .. D[1];
+					alacal = alacal .. "#" .. (D[2] or FLAG_MAX) .. "#" .. D[1];
 				else
 					-- reputable = reputable .. "::";
-					alacal = alacal .. "##9";
+					alacal = alacal .. "#" .. FLAG_MAX .. "#";
 				end
 			end
 			-- reputable = reputable .. "::";
@@ -3164,23 +3202,19 @@ do	--	MAIN
 					DLY.reset = now + GetQuestResetTime();
 				else
 					local calmsg = nil;
-					if LT_BCMCD.GROUP < now then
+					if IsInGroup(LE_PARTY_CATEGORY_HOME) and LT_BCMCD.GROUP < now then
 						LT_BCMCD.GROUP = now + 16;
 						calmsg = calmsg or GetCalMessage();
 						if IsInRaid(LE_PARTY_CATEGORY_HOME) then
 							SendAddonMessage(ADDON_PREFIX, calmsg, "RAID");
-						elseif IsInGroup(LE_PARTY_CATEGORY_HOME) then
+						else
 							SendAddonMessage(ADDON_PREFIX, calmsg, "PARTY");
-						-- elseif IsInGroup(LE_PARTY_CATEGORY_INSTANCE) then	--	not allowed in classic and bcc
-						-- 	SendAddonMessage(ADDON_PREFIX, calmsg, "INSTANCE_CHAT");
 						end
 					end
-					if LT_BCMCD.GUILD < now then
+					if GetGuildInfo('player') ~= nil and LT_BCMCD.GUILD < now then
 						LT_BCMCD.GUILD = now + 16;
 						calmsg = calmsg or GetCalMessage();
-						if GetGuildInfo('player') ~= nil then
-							SendAddonMessage(ADDON_PREFIX, calmsg, "GUILD");
-						end
+						SendAddonMessage(ADDON_PREFIX, calmsg, "GUILD");
 					end
 					if LT_BCMCD.YELL < now then
 						LT_BCMCD.YELL = now + 32;
@@ -3223,6 +3257,9 @@ do	--	MAIN
 				local _DLY = alaCalendarSV.daily;
 				local now = GetServerTime();
 				if _DLY.reset ~= nil and _DLY.reset < now then
+					if __is_dev then
+						_log_('wipe', _DLY.reset - now);
+					end
 					wipe(_DLY);
 				else
 					for index = 1, 4 do
@@ -3259,7 +3296,7 @@ do	--	MAIN
 					local info = LT_DailyInfo[id];
 					DLY[info[3]] = { id, FLAG_NPC, };
 					if __is_dev then
-						print('add', info[3], id, name);
+						_log_('add', info[3], id, name);
 					end
 				end
 			end
@@ -3288,7 +3325,7 @@ do	--	MAIN
 		end
 		function NS.QUEST_TURNED_IN(id)
 			GetQuestsCompleted(LT_QuestCompleted);
-			-- print(id, LT_DailyInfo[id], LT_QuestCompleted[id])
+			-- _log_(id, LT_DailyInfo[id], LT_QuestCompleted[id])
 			-- local info = LT_DailyInfo[id];
 			-- if info ~= nil then
 			-- 	LT_QuestCompleted[id] = true;
@@ -3325,22 +3362,28 @@ do	--	MAIN
 		end
 		local function CheckComm(index, seq, val, sender)
 			local dly = DLY[index];
-			seq = tonumber(seq) or 9;
+			seq = tonumber(seq) or FLAG_MAX;
+			if seq == FLAG_NPC then
+				seq = FLAG_ALA;
+			end
 			val = tonumber(val);
 			if val ~= nil and val > 0 then
 				if dly == nil or dly[1] == nil then
 					DLY[index] = { val, seq < FLAG_MAX_CREDIBLE and FLAG_ALA or FLAG_REP, };
 					if __is_dev then
-						print("Recv" .. index .. " " .. (seq == FLAG_NPC and 'npc: ' or seq == FLAG_ALA and "ala: " or "rep: ") .. val)
+						_log_("recv1 " .. index .. " " .. (seq == FLAG_NPC and 'npc: ' or seq == FLAG_ALA and "ala: " or "rep: ") .. val)
 					end
 				else
 					if seq < dly[2] then
 						dly[1] = val;
 						dly[2] = seq < FLAG_MAX_CREDIBLE and FLAG_ALA or FLAG_REP;
+						if __is_dev then
+							_log_("recv2 " .. index .. " " .. (seq == FLAG_NPC and 'npc: ' or seq == FLAG_ALA and "ala: " or "rep: ") .. val)
+						end
 					elseif seq == dly[2] then
 						if dly[1] ~= val then
 							if __is_dev then
-								print("code: -1, " .. index .. ", " .. val .. ", " .. dly[1], sender);
+								_log_("code: " .. seq .. ", " .. index .. ", " .. val .. ", " .. dly[1], sender);
 							end
 						end
 					else
@@ -3353,11 +3396,11 @@ do	--	MAIN
 			return 0;
 		end
 		function NS.DailyOnComm(reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing, channel, sender)
-			if reset == nil or abs(reset - DLY.reset) < 1800 then
+			if reset == nil or reset - DLY.reset <= 30 then
 				if (CheckComm(1, NSeq, Normal, sender) + CheckComm(2, HSeq, Heroic, sender) + CheckComm(3, CSeq, Cooking, sender) + CheckComm(4, FSeq, Fishing, sender) <= 0) and channel == "YELL" then
 					LT_BCMCD.YELL = min(LT_BCMCD.YELL + 16, GetServerTime() + 32);
 					if __is_dev then
-						print("Delay", LT_BCMCD.YELL - GetServerTime());
+						_log_("Delay", LT_BCMCD.YELL - GetServerTime());
 					end
 				end
 			end
