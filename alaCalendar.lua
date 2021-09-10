@@ -3010,7 +3010,8 @@ do	--	MAIN
 	local ADDON_MSG_REPLY = "_r_cal";
 	local ADDON_MSG_BCMDAILY_ = "_b_dly";
 	local ADDON_MSG_BCMDAILY__ = "_b_dl2";
-	local ADDON_MSG_BCMDAILY = "_b_dl3";
+	local ADDON_MSG_BCMDAILY___ = "_b_dl3";
+	local ADDON_MSG_BCMDAILY = "_b_dl4";
 	do	--	comm
 		--	GUID#INST# index-count #id#t#numEncounters#encounterProgress#bossName#isKilled
 		local function encode_data(cache, max_len, GUID, inst, var)
@@ -3094,8 +3095,23 @@ do	--	MAIN
 			if sender ~= PLAYER_NAME then
 				if prefix == ADDON_PREFIX then
 					local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
-					if control_code == ADDON_MSG_BCMDAILY_ then
-						local _, reset, Normal, Heroic, Cooking, Fishing = strsplit("#", msg);
+					if control_code == ADDON_MSG_BCMDAILY then
+						local _, reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing = strsplit("#", msg);
+						if reset ~= nil and reset ~= "" then
+							reset = tonumber(reset);
+							if reset ~= nil and reset > 0 then
+								NS.DailyOnComm(
+									reset,
+									NSeq, Normal,
+									HSeq, Heroic,
+									CSeq, Cooking,
+									FSeq, Fishing,
+									channel, sender
+								);
+							end
+						end
+					elseif control_code == ADDON_MSG_BCMDAILY___ then
+						local _, reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing = strsplit("#", msg);
 						if reset ~= nil and reset ~= "" then
 							reset = tonumber(reset);
 							if reset ~= nil and reset > 0 then
@@ -3124,17 +3140,17 @@ do	--	MAIN
 								);
 							end
 						end
-					elseif control_code == ADDON_MSG_BCMDAILY then
-						local _, reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing = strsplit("#", msg);
+					elseif control_code == ADDON_MSG_BCMDAILY_ then
+						local _, reset, Normal, Heroic, Cooking, Fishing = strsplit("#", msg);
 						if reset ~= nil and reset ~= "" then
 							reset = tonumber(reset);
 							if reset ~= nil and reset > 0 then
 								NS.DailyOnComm(
 									reset,
-									NSeq, Normal,
-									HSeq, Heroic,
-									CSeq, Cooking,
-									FSeq, Fishing,
+									FLAG_MAX, Normal,
+									FLAG_MAX, Heroic,
+									FLAG_MAX, Cooking,
+									FLAG_MAX, Fishing,
 									channel, sender
 								);
 							end
@@ -3200,7 +3216,7 @@ do	--	MAIN
 					wipe(DLY);
 					wipe(LT_QuestCompleted);
 					DLY.reset = now + GetQuestResetTime();
-				else
+				elseif DLY.reset > now + 300 then
 					local calmsg = nil;
 					if IsInGroup(LE_PARTY_CATEGORY_HOME) and LT_BCMCD.GROUP < now then
 						LT_BCMCD.GROUP = now + 16;
@@ -3396,7 +3412,7 @@ do	--	MAIN
 			return 0;
 		end
 		function NS.DailyOnComm(reset, NSeq, Normal, HSeq, Heroic, CSeq, Cooking, FSeq, Fishing, channel, sender)
-			if reset == nil or reset - DLY.reset <= 30 then
+			if reset == nil or (reset - DLY.reset >= -8 and reset - DLY.reset <= 8) then
 				if (CheckComm(1, NSeq, Normal, sender) + CheckComm(2, HSeq, Heroic, sender) + CheckComm(3, CSeq, Cooking, sender) + CheckComm(4, FSeq, Fishing, sender) <= 0) and channel == "YELL" then
 					LT_BCMCD.YELL = min(LT_BCMCD.YELL + 16, GetServerTime() + 32);
 					if __is_dev then
