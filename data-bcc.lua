@@ -185,6 +185,39 @@ NS.milestone = {
 			nil,
 			instance = true,
 		},
+		--	P2
+		["Serpent"] = {
+			phase = 2,
+			type = "fixed_cycle",
+			-1,
+			7 * 86400,
+			nil,
+			nil,
+			0,
+			ARTWORK_PATH .. "Milestone\\lfgicon-serpentshrinecavern",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			instance = true,
+		},
+		["Tempest"] = {
+			phase = 2,
+			type = "fixed_cycle",
+			-1,
+			7 * 86400,
+			nil,
+			nil,
+			0,
+			ARTWORK_PATH .. "Milestone\\lfgicon-tempestkeep",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			instance = true,
+		},
 	--
 	--	Festival
 	--	P3	DarkMoon			--	UTC-8	2020-2-7
@@ -388,6 +421,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18779 * 86400 + 16 * 3600;		--
 		NS.milestone["Magtheridon"][1] = 18779 * 86400 + 16 * 3600;	--
 		NS.milestone["Gruul"][1] = 18779 * 86400 + 16 * 3600;		--
+		NS.milestone["Serpent"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
+		NS.milestone["Tempest"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 16 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 16 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 16 * 3600;
@@ -410,6 +445,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18779 * 86400 + 16 * 3600;		--
 		NS.milestone["Magtheridon"][1] = 18779 * 86400 + 16 * 3600;	--
 		NS.milestone["Gruul"][1] = 18779 * 86400 + 16 * 3600;		--
+		NS.milestone["Serpent"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
+		NS.milestone["Tempest"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 13 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 13 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 13 * 3600;
@@ -432,6 +469,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Magtheridon"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Gruul"][1] = 18781 * 86400 + 1 * 3600;
+		NS.milestone["Serpent"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
+		NS.milestone["Tempest"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 5 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 5 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 5 * 3600;
@@ -454,6 +493,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18780 * 86400 + 7 * 3600;			--
 		NS.milestone["Magtheridon"][1] = 18780 * 86400 + 7 * 3600;	--
 		NS.milestone["Gruul"][1] = 18780 * 86400 + 7 * 3600;		--
+		NS.milestone["Serpent"][1] = 18780 * 86400 + 7 * 3600 + 105 * 86400;		--
+		NS.milestone["Tempest"][1] = 18780 * 86400 + 7 * 3600 + 105 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 3 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 3 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 3 * 3600;
@@ -476,6 +517,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Magtheridon"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Gruul"][1] = 18781 * 86400 + 1 * 3600;
+		NS.milestone["Serpent"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
+		NS.milestone["Tempest"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 4 * 3600;
@@ -498,6 +541,8 @@ NS.apply_region = {
 		NS.milestone["Kara"][1] = 18780 * 86400 + 23 * 3600;		--	--	2021-06-03	1621465200
 		NS.milestone["Magtheridon"][1] = 18780 * 86400 + 23 * 3600;	--	--	2021-06-03	1621465200
 		NS.milestone["Gruul"][1] = 18780 * 86400 + 23 * 3600;		--	--	2021-06-03	1621465200
+		NS.milestone["Serpent"][1] = 18780 * 86400 + 23 * 3600 + 105 * 86400;		--	--	2021-06-03	1621465200
+		NS.milestone["Tempest"][1] = 18780 * 86400 + 23 * 3600 + 105 * 86400;		--	--	2021-06-03	1621465200
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 4 * 3600;

@@ -3335,7 +3335,7 @@ do	--	MAIN
 		function NS.QUEST_TURNED_IN(id)
 			if LT_DailyInfo[id] ~= nil then
 				LT_QuestCompleted[id] = true;
-				C_Timer.After(1.0, GetQuestsCompleted(LT_QuestCompleted));
+				C_Timer.After(1.0, function() GetQuestsCompleted(LT_QuestCompleted); end);
 			end
 			-- _log_(id, LT_DailyInfo[id], LT_QuestCompleted[id])
 			-- local info = LT_DailyInfo[id];
@@ -3410,7 +3410,7 @@ do	--	MAIN
 						return 1;
 					end
 				end
-			elseif dly ~= nil or dly[1] ~= nil then
+			elseif dly ~= nil and dly[1] ~= nil then
 				return 1;
 			end
 			return 0;
