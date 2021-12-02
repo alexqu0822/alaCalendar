@@ -3296,6 +3296,7 @@ do	--	MAIN
 			end
 		end
 		local function ProcQuests(...)
+			--	titleText, level, isTrivial, frequency, isRepeatable, isLegendary, isIgnored
 			local num = select("#", ...) / 7;
 			num = num - num % 1.0;
 			for index = 1, num do
@@ -3310,7 +3311,7 @@ do	--	MAIN
 				end
 			end
 		end
-		function NS.GOSSIP_SHOW()
+		function NS.GOSSIP_SHOW()print('GOSSIP_SHOW')
 			local GUID = UnitGUID('npc');
 			if GUID ~= nil then
 				local _, _, _, _, _, id = strsplit("-", GUID);
@@ -3319,7 +3320,7 @@ do	--	MAIN
 				end
 			end
 		end
-		function NS.QUEST_DETAIL()
+		function NS.QUEST_DETAIL()print('QUEST_DETAIL')
 			local GUID = UnitGUID('npc');
 			if GUID ~= nil then
 				local _, _, _, _, _, id = strsplit("-", GUID);
@@ -3462,16 +3463,16 @@ do	--	MAIN
 			--
 			if GameTimeFrame then
 				GameTimeFrame:SetScript("OnMouseUp", icon_OnClick);
-				if GameTimeFrame_UpdateTooltip ~= nil then
-					hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
-						GameTooltip:AddLine(" ");
-						NS.AddDailyInfo(GameTooltip);
-						for _, text in next, L.TooltipLines do
-							GameTooltip:AddLine(text);
-						end
-						GameTooltip:Show();
-					end);
-				end
+				-- if GameTimeFrame_UpdateTooltip ~= nil then
+				-- 	hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+				-- 		GameTooltip:AddLine(" ");
+				-- 		NS.AddDailyInfo(GameTooltip);
+				-- 		for _, text in next, L.TooltipLines do
+				-- 			GameTooltip:AddLine(text);
+				-- 		end
+				-- 		GameTooltip:Show();
+				-- 	end);
+				-- end
 				if SET.show_indicator then
 					local TEXTURE = "interface\\minimap\\supertrackerarrow";
 					local NUM_TEX = 8;
@@ -3526,7 +3527,7 @@ do	--	MAIN
 								OnTooltipShow = function(tt)
 										tt:AddLine("alaCalendar");
 										tt:AddLine(" ");
-										NS.AddDailyInfo(tt);
+										-- NS.AddDailyInfo(tt);
 										for _, text in next, L.TooltipLines do
 											tt:AddLine(text);
 										end
@@ -3757,10 +3758,10 @@ do	--	INITIALIZE
 		MODIFY_SAVED_VARIABLE();
 		NS.InitTimeZone();
 		NS.RegInstanceEvent();
-		NS.InitDaily();
+		-- NS.InitDaily();
 		NS.CreateUI();
 		NS.InitInstance();
-		NS.InitComm();
+		-- NS.InitComm();
 		--
 		if __ala_meta__.initpublic then __ala_meta__.initpublic(); end
 	end
