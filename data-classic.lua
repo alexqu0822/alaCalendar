@@ -33,6 +33,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	["ONY"] = {
 		phase = 1,
@@ -49,6 +50,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	--	DM									--	UTC-8	2019-10-16-Wed
 	--	P2	No more RAID					--	UTC-8	2019-11-15-Fri
@@ -69,6 +71,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	--	BG	Arathi Basin		--	UTC-8	2020-3-12-Thu
 	--	P4	ZG, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
@@ -87,6 +90,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	--	P5
 	["TAQ"] = {
@@ -104,6 +108,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	["RAQ"] = {
 		phase = 5,
@@ -120,6 +125,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	--	P6
 	["NAXX"] = {
@@ -137,6 +143,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 60,
 	},
 	--
 	--	Festival
@@ -157,6 +164,7 @@ NS.milestone = {
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		festival = true,
+		min = 0,
 	},
 	["DarkMoon: Elwynn"] = {
 		phase = 3,
@@ -174,6 +182,7 @@ NS.milestone = {
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		festival = true,
+		min = 0,
 	},
 	--	P4	Fishing Extravaganza
 	["Fishing Extravaganza"] = {
@@ -193,6 +202,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		texture_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-13	04-10	05-08	Warsong Gulch
 	["Warsong Gulch"] = {
@@ -212,6 +222,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-20	04-17	05-15	Arathi Basin
 	["Arathi Basin"] = {
@@ -231,6 +242,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-27	04-24	05-22	None
 	--	Server Time	--	04-03	05-01	05-29	Alterac Valley
@@ -251,6 +263,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	["ala"] = {
 		phase = 0,
@@ -264,6 +277,7 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 0,
 	},
 };
 NS.milestone_list = {

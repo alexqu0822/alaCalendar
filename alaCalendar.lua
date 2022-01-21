@@ -4,43 +4,82 @@
 ----------------------------------------------------------------------------------------------------
 local ADDON, NS = ...;
 _G.__ala_meta__ = _G.__ala_meta__ or {  };
+local __ala_meta__ = _G.__ala_meta__;
 __ala_meta__.cal = NS;
+local __raidlib = __ala_meta__.__raidlib;
 local __is_dev = select(2, GetAddOnInfo("!!!!!DebugMe")) ~= nil;
 
 local _G = _G;
-do
-	if NS.__fenv == nil then
-		NS.__fenv = setmetatable({  },
-				{
-					__index = _G,
-					__newindex = function(t, key, value)
-						rawset(t, key, value);
-						print("aca assign global", key, value);
-						return value;
-					end,
-				}
-			);
-	end
-	setfenv(1, NS.__fenv);
+local setfenv = setfenv;
+local _GlobalRef = {  };
+local _GlobalAssign = {  };
+function NS:BuildEnv(category)
+	local _G = _G;
+	_GlobalRef[category] = _GlobalRef[category] or {  };
+	_GlobalAssign[category] = _GlobalAssign[category] or {  };
+	local Ref = _GlobalRef[category];
+	local Assign = _GlobalAssign[category];
+	setfenv(2, setmetatable(
+		{  },
+		{
+			__index = function(tbl, key, val)
+				Ref[key] = (Ref[key] or 0) + 1;
+				return _G[key];
+			end,
+			__newindex = function(tbl, key, value)
+				rawset(tbl, key, value);
+				Assign[key] = (Assign[key] or 0) + 1;
+				return value;
+			end,
+		}
+	));
 end
-local __raidlib = __ala_meta__.__raidlib;
+function NS:MergeGlobal(DB)
+	local _Ref = DB._GlobalRef;
+	if _Ref ~= nil then
+		for category, db in next, _Ref do
+			local to = _GlobalRef[category];
+			if to == nil then
+				_GlobalRef[category] = db;
+			else
+				for key, val in next, db do
+					to[key] = (to[key] or 0) + val;
+				end
+			end
+		end
+	end
+	DB._GlobalRef = _GlobalRef;
+	local _Assign = DB._GlobalAssign;
+	if _Assign ~= nil then
+		for category, db in next, _Assign do
+			local to = _GlobalAssign[category];
+			if to == nil then
+				_GlobalAssign[category] = db;
+			else
+				for key, val in next, db do
+					to[key] = (to[key] or 0) + val;
+				end
+			end
+		end
+	end
+	DB._GlobalAssign = _GlobalAssign;
+end
+
 
 local LOCALE = GetLocale();
 local curPhase = 6;
 ----------------------------------------------------------------------------------------------------upvalue
 	----------------------------------------------------------------------------------------------------LUA
-	local math, table, string, bit = math, table, string, bit;
-	local type, tonumber, tostring = type, tonumber, tostring;
-	local getfenv, setfenv, pcall, xpcall, assert, error, loadstring = getfenv, setfenv, pcall, xpcall, assert, error, loadstring;
-	local abs, ceil, floor, max, min, random, sqrt = abs, ceil, floor, max, min, random, sqrt;
-	local format, gmatch, gsub, strbyte, strchar, strfind, strlen, strlower, strmatch, strrep, strrev, strsub, strupper, strtrim, strsplit, strjoin, strconcat =
-			format, gmatch, gsub, strbyte, strchar, strfind, strlen, strlower, strmatch, strrep, strrev, strsub, strupper, strtrim, strsplit, strjoin, strconcat;
-	local getmetatable, setmetatable, rawget, rawset = getmetatable, setmetatable, rawget, rawset;
-	local next, ipairs, pairs, sort, tContains, tinsert, tremove, wipe, unpack = next, ipairs, pairs, sort, tContains, tinsert, tremove, wipe, unpack;
-	local tConcat = table.concat;
-	local select = select;
 	local date, time = date, time;
+	local select, next, inext = select, next, ipairs({  });
+	local type, tonumber, tostring = type, tonumber, tostring;
+	local getfenv, setfenv, pcall = getfenv, setfenv, pcall;
+	local abs, ceil, floor, max, min = abs, ceil, floor, max, min;
+	local format, gsub, strlen, strlower, strmatch, strsub, strupper, strsplit = format, gsub, string.len, string.lower, string.match, string.sub, string.upper, string.split;
+	local getmetatable, setmetatable, rawget, rawset = getmetatable, setmetatable, rawget, rawset;
+	local tinsert, tremove, wipe, unpack = tinsert, tremove, wipe, unpack;
 	----------------------------------------------------------------------------------------------------GAME
+	local C_Timer = C_Timer;
 	local print = print;
 	local GetServerTime = GetServerTime;
 	local CreateFrame = CreateFrame;
@@ -59,9 +98,14 @@ local curPhase = 6;
 	local GetQuestID = GetQuestID;
 	local IsInRaid, IsInGroup = IsInRaid, IsInGroup;
 	local GetGuildInfo = GetGuildInfo;
+	local GetPlayerInfoByGUID = GetPlayerInfoByGUID;
 	local LE_PARTY_CATEGORY_HOME, LE_PARTY_CATEGORY_INSTANCE = LE_PARTY_CATEGORY_HOME, LE_PARTY_CATEGORY_INSTANCE;
 	local GetDailyQuestsCompleted, GetMaxDailyQuests = GetDailyQuestsCompleted, GetMaxDailyQuests;
+	local GetQuestResetTime = GetQuestResetTime;
+	local GetQuestsCompleted = GetQuestsCompleted;
+	local GetNumSavedInstances, GetSavedInstanceInfo, GetSavedInstanceEncounterInfo = GetNumSavedInstances, GetSavedInstanceInfo, GetSavedInstanceEncounterInfo;
 	--------------------------------------------------
+	local GameTooltip = GameTooltip;
 	local RAID_CLASS_COLORS = RAID_CLASS_COLORS;
 	local CLASS_ICON_TCOORDS = CLASS_ICON_TCOORDS;
 	local _ = nil;
@@ -102,29 +146,9 @@ local curPhase = 6;
 		texture_reset = "Interface\\Buttons\\UI-RefreshButton",
 
 		frameTitle_YSize = 48,
-		frameBackdrop = {
-			bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 16,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0, }
-		},
-		frameBackdropColor = { 0.15, 0.15, 0.15, 0.9, },
-		frameBackdropBorderColor = { 0.0, 0.0, 0.0, 1.0, },
 
 		cal_XToBorder = 4,
 		cal_YToBorder = 4,
-		calBackdrop = {
-			bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 16,
-			edgeSize = 1,
-			insets = { left = 0, right = 0, top = 0, bottom = 0, }
-		},
-		calBackdropColor = { 0.5, 0.5, 0.5, 0.25, },
-		calBackdropBorderColor = { 0.0, 0.0, 0.0, 1.0, },
 
 		weekTitle_YSize = 30,
 		weekTitle_BG = "Interface\\Calendar\\CalendarBackground",
@@ -147,16 +171,6 @@ local curPhase = 6;
 		board_YSize = 600,
 
 		board_buttonHeight = 24,
-		buttonBackdrop = {
-			-- bgFile = "Interface\\Buttons\\WHITE8X8",
-			-- edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-			tile = false,
-			tileSize = 16,
-			edgeSize = 1,
-			insets = { left = 1, right = 1, top = 1, bottom = 1 }
-		},
-		buttonBackdropColor = { 1.0, 1.0, 1.0, 1.0, },
-		buttonBackdropBorderColor = { 1.0, 1.0, 1.0, 1.0, },
 		buttonHighlightColor = { 0.5, 0.5, 0.0, 0.25, },
 		buttonGlowColor = { 0.0, 0.25, 0.0, 0.15, },
 
@@ -216,12 +230,6 @@ local PLAYER_NAME = UnitName('player');
 local PLAYER_REALM_ID = tonumber(GetRealmID());
 local PLAYER_REALM_NAME = GetRealmName();
 local PLAYER_GUID = UnitGUID('player');
-local FLAG_NPC = -9;
-local FLAG_NPC_ALA = -2;
-local FLAG_ALA = -1;
-local FLAG_MAX_CREDIBLE = 0;
-local FLAG_REP = 1;
-local FLAG_MAX = 9;
 
 local function info_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
@@ -240,6 +248,8 @@ end
 local function IsEastAsiaFormat()
 	return LOCALE == "zhCN" or LOCALE == "zhTW" or LOCALE == "koKR";
 end
+
+NS:BuildEnv("cal");
 
 local _EventHandler = CreateFrame("FRAME");
 do	--	EventHandler
@@ -260,6 +270,21 @@ do	--	EventHandler
 	function _EventHandler:UnregEvent(event)
 		self:UnregisterEvent(event);
 	end
+end
+local T_Scheduler = setmetatable({  }, { __mode = 'k', })
+function NS.F_ScheduleDelayCall(func, delay)
+	local sch = T_Scheduler[func];
+	if sch == nil then
+		sch = {  };
+		sch[1] = function()
+			func();
+			sch[2] = false;
+		end;
+	elseif sch[2] then
+		return;
+	end
+	sch[2] = true;
+	C_Timer.After(delay or 0.2, sch[1]);
 end
 
 do	--	util
@@ -728,7 +753,7 @@ do	--	MAIN
 						cell:ResetInstance();
 						local state = cell.state;
 						wipe(state);
-						for _, inst in ipairs(NS.milestone_list) do
+						for _, inst in inext, NS.milestone_list, 0 do
 							if SET.inst_hash[inst] then
 								local val = NS.milestone[inst];
 								if val and val.phase <= curPhase then
@@ -962,13 +987,13 @@ do	--	MAIN
 			NS.proc_locked_down_instance();
 		end
 		function NS.ENCOUNTER_END()
-			_EventHandler:run_on_next_tick(NS.proc_locked_down_instance);
+			NS.F_ScheduleDelayCall(NS.proc_locked_down_instance);
 		end
 		function NS.BOSS_KILL()
-			_EventHandler:run_on_next_tick(NS.proc_locked_down_instance);
+			NS.F_ScheduleDelayCall(NS.proc_locked_down_instance);
 		end
 		function NS.UPDATE_INSTANCE_INFO()
-			_EventHandler:run_on_next_tick(NS.proc_locked_down_instance);
+			NS.F_ScheduleDelayCall(NS.proc_locked_down_instance);
 		end
 		function NS.PLAYER_LEVEL_UP(level)
 			VAR.PLAYER_LEVEL = level;
@@ -1351,9 +1376,7 @@ do	--	MAIN
 				if SET.hide_calendar_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR");
 				end
-				frame:SetBackdrop(ui_style.frameBackdrop);
-				frame:SetBackdropColor(unpack(ui_style.frameBackdropColor));
-				frame:SetBackdropBorderColor(unpack(ui_style.frameBackdropBorderColor));
+				__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.frame_XSize, ui_style.frame_YSize);
 				frame:SetFrameStrata("HIGH");
 				frame:SetPoint("CENTER", UIParent, "CENTER", SET.cal_pos[1], SET.cal_pos[2]);
@@ -1594,9 +1617,6 @@ do	--	MAIN
 
 			do	--	calendar
 				local cal = CreateFrame("FRAME", nil, frame);
-				cal:SetBackdrop(ui_style.calBackdrop);
-				cal:SetBackdropColor(unpack(ui_style.calBackdropColor));
-				cal:SetBackdropBorderColor(unpack(ui_style.calBackdropBorderColor));
 				cal:SetSize(ui_style.cal_XSize, ui_style.cal_YSize);
 				cal:SetPoint("TOPLEFT", frame, "TOPLEFT", ui_style.cal_XToBorder, - (ui_style.frameTitle_YSize + ui_style.cal_YToBorder));
 				cal:EnableMouse(true);
@@ -1855,9 +1875,6 @@ do	--	MAIN
 			local function funcToCreateBoardButton(parent, index, buttonHeight)
 				local button = CreateFrame("BUTTON", nil, parent);
 				button:SetHeight(buttonHeight);
-				button:SetBackdrop(ui_style.buttonBackdrop);
-				button:SetBackdropColor(unpack(ui_style.buttonBackdropColor));
-				button:SetBackdropBorderColor(unpack(ui_style.buttonBackdropBorderColor));
 				button:SetHighlightTexture(ui_style.texture_white);
 				button:GetHighlightTexture():SetVertexColor(unpack(ui_style.buttonHighlightColor));
 				button:EnableMouse(true);
@@ -2104,9 +2121,7 @@ do	--	MAIN
 				if SET.hide_board_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR_BOARD");
 				end
-				frame:SetBackdrop(ui_style.frameBackdrop);
-				frame:SetBackdropColor(unpack(ui_style.frameBackdropColor));
-				frame:SetBackdropBorderColor(unpack(ui_style.frameBackdropBorderColor));
+				__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.board_XSize, ui_style.board_YSize);
 				frame:SetFrameStrata("HIGH");
 				frame:SetPoint("TOPLEFT", gui["CALENDAR"], "TOPRIGHT", 1, 0);
@@ -2272,8 +2287,8 @@ do	--	MAIN
 						local VAR = AVAR[key];
 						local var = VAR[inst];
 						local ms = NS.milestone[inst];
-						if ms and ms.phase <= curPhase then
-							if (var and var[1]) or (SET.show_unlocked and VAR.PLAYER_LEVEL and VAR.PLAYER_LEVEL >= 60) or VAR.manual then
+						if ms and ms.phase <= curPhase and SET.inst_hash[inst] then
+							if (var and var[1]) or (SET.show_unlocked and VAR.PLAYER_LEVEL and VAR.PLAYER_LEVEL >= ms.min) or VAR.manual then
 								if add_head then
 									tinsert(list, 'header');
 									tinsert(list, inst);
@@ -2402,9 +2417,6 @@ do	--	MAIN
 			local function funcToCreateCharButton(parent, index, buttonHeight)
 				local button = CreateFrame("BUTTON", nil, parent);
 				button:SetHeight(buttonHeight);
-				button:SetBackdrop(ui_style.buttonBackdrop);
-				button:SetBackdropColor(unpack(ui_style.buttonBackdropColor));
-				button:SetBackdropBorderColor(unpack(ui_style.buttonBackdropBorderColor));
 				button:SetHighlightTexture(ui_style.texture_white);
 				button:GetHighlightTexture():SetVertexColor(unpack(ui_style.buttonHighlightColor));
 				button:EnableMouse(true);
@@ -2628,9 +2640,7 @@ do	--	MAIN
 		function NS.ui_CreateConfigFrame()
 			local frame = CreateFrame("FRAME", "ALA_CALENDAR_CONFIG", UIParent);
 			tinsert(UISpecialFrames, "ALA_CALENDAR_CONFIG");
-			frame:SetBackdrop(ui_style.frameBackdrop);
-			frame:SetBackdropColor(unpack(ui_style.frameBackdropColor));
-			frame:SetBackdropBorderColor(unpack(ui_style.frameBackdropBorderColor));
+			__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
 			frame:SetSize(620, 250);
 			frame:SetFrameStrata("DIALOG");
 			frame:SetPoint("CENTER");
@@ -2746,9 +2756,7 @@ do	--	MAIN
 			do	--	character list
 				--	char_list
 					local char_list = CreateFrame("FRAME", nil, frame);
-					char_list:SetBackdrop(ui_style.frameBackdrop);
-					char_list:SetBackdropColor(unpack(ui_style.frameBackdropColor));
-					char_list:SetBackdropBorderColor(unpack(ui_style.frameBackdropBorderColor));
+					__ala_meta__._SetBackdrop(char_list, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
 					char_list:SetSize(360, 400);
 					char_list:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", 2, 0);
 					char_list:EnableMouse(true);
@@ -2832,9 +2840,7 @@ do	--	MAIN
 				--
 				--	manual
 					local manual = CreateFrame("FRAME", nil, char_list);
-					manual:SetBackdrop(ui_style.frameBackdrop);
-					manual:SetBackdropColor(unpack(ui_style.frameBackdropColor));
-					manual:SetBackdropBorderColor(unpack(ui_style.frameBackdropBorderColor));
+					__ala_meta__._SetBackdrop(manual, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
 					manual:SetSize(280, 32);
 					manual:SetPoint("BOTTOMLEFT", char_list, "TOPLEFT", 0, 2);
 					manual:EnableMouse(true);
@@ -3009,12 +3015,9 @@ do	--	MAIN
 	local ADDON_MSG_CONTROL_CODE_LEN = 6;
 	local ADDON_MSG_QUERY = "_q_cal";
 	local ADDON_MSG_REPLY = "_r_cal";
-	local ADDON_MSG_BCMDAILY1 = "_b_dly";
-	local ADDON_MSG_BCMDAILY2_1 = "_b_dl2";
-	local ADDON_MSG_BCMDAILY2_2 = "_b_dl3";
-	local ADDON_MSG_BCMDAILY2_3 = "_b_dl4";
-	local ADDON_MSG_BCMDAILY2_4 = "_b_dl5";
-	local ADDON_MSG_BCMDAILY = "_b_dl6";
+	local ADDON_MSG_BCMDAILY = "_b_dln";
+	local ADDON_MSG_VER = 1;
+	local ADDON_MSG_MIN_VER = 1;
 	do	--	comm
 		--	GUID#INST# index-count #id#t#numEncounters#encounterProgress#bossName#isKilled
 		local function encode_data(cache, max_len, GUID, inst, var)
@@ -3053,7 +3056,7 @@ do	--	MAIN
 			return val;
 		end
 		local function cache_received(cache, data)
-			local _, _, GUID, inst, index, count, val = strfind(data, "([^#]+)#([^#]+)#([^#^-]+)%-([^#^-]+)#(.+)");
+			local GUID, inst, index, count, val = strmatch(data, "([^#]+)#([^#]+)#([^#^-]+)%-([^#^-]+)#(.+)");
 			if GUID then
 				index = tonumber(index);
 				count = tonumber(count);
@@ -3073,89 +3076,35 @@ do	--	MAIN
 			return false;
 		end
 		function NS.CHAT_MSG_ADDON(prefix, msg, channel, sender, target, zoneChannelID, localID, name, instanceID)
-			--[==[
-			if prefix == ADDON_PREFIX then
-				local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
-				local name, realm = strsplit("-", sender);
-				if realm ~= nil and realm ~= "" and realm ~= NS.realm then
-					name = sender;
-				end
-				if control_code == ADDON_MSG_QUERY then
-					local cache = {  };
-					local raid_list = SET.raid_list;
-					for index = 1, #raid_list do
-						local inst = raid_list[inst];
-						encode_data(cache, 255, PLAYER_GUID, inst, VAR[inst]);
-					end
-					for index = 1, #cache do
-						SendAddonMessage(ADDON_PREFIX, ADDON_MSG_REPLY .. cache[index], "WHISPER", sender);
-					end
-				elseif control_code == ADDON_MSG_REPLY then
-				end
-			end
-			--]==]
 			sender = Ambiguate(sender, 'none');
 			if sender ~= PLAYER_NAME then
 				if prefix == ADDON_PREFIX then
 					local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
 					if control_code == ADDON_MSG_BCMDAILY then
-						local _, reset, NID, NSeq, NTime, HID, HSeq, HTime, CID, CSeq, CTime, FID, FSeq, FTime = strsplit("#", msg);
-						if reset ~= nil and reset ~= "" then
-							reset = tonumber(reset);
-							if reset ~= nil and reset > 0 then
-								NS.DailyOnComm(
-									reset,
-									NID, NSeq, NTime,
-									HID, HSeq, HTime,
-									CID, CSeq, CTime,
-									FID, FSeq, FTime,
-									channel, sender
-								);
-							end
-						end
-					elseif control_code == ADDON_MSG_BCMDAILY2_1 or control_code == ADDON_MSG_BCMDAILY2_2 or control_code == ADDON_MSG_BCMDAILY2_3 or control_code == ADDON_MSG_BCMDAILY2_4 then
-						local _, reset, NSeq, NID, HSeq, HID, CSeq, CID, FSeq, FID = strsplit("#", msg);
-						if reset ~= nil and reset ~= "" then
-							reset = tonumber(reset);
-							if reset ~= nil and reset > 0 then
-								NS.DailyOnComm(
-									reset,
-									NID, FLAG_MAX, -1,
-									HID, FLAG_MAX, -1,
-									CID, FLAG_MAX, -1,
-									FID, FLAG_MAX, -1,
-									channel, sender
-								);
-							end
-						end
-					elseif control_code == ADDON_MSG_BCMDAILY1 then
-						local _, reset, NID, HID, CID, FID = strsplit("#", msg);
-						if reset ~= nil and reset ~= "" then
-							reset = tonumber(reset);
-							if reset ~= nil and reset > 0 then
-								NS.DailyOnComm(
-									reset,
-									NID, FLAG_MAX, -1,
-									HID, FLAG_MAX, -1,
-									CID, FLAG_MAX, -1,
-									FID, FLAG_MAX, -1,
-									channel, sender
-								);
-							end
+						local _, Ver, NID, NTime, HID, HTime, CID, CTime, FID, FTime = strsplit("#", msg);
+						Ver = tonumber(Ver);
+						if Ver ~= nil and Ver >= ADDON_MSG_MIN_VER then
+							NS.DailyOnComm(
+								channel, sender,
+								NID, NTime,
+								HID, HTime,
+								CID, CTime,
+								FID, FTime
+							);
 						end
 					end
 				elseif prefix == "REPUTABLE" then
-					local action, version, NID, _, HID, _, CID, _, FID, _, PvP, _ = strsplit(":", msg);
-					if action ~= nil then
-						NS.DailyOnComm(
-							nil,
-							NID, FLAG_REP, -1,
-							HID, FLAG_REP, -1,
-							CID, FLAG_REP, -1,
-							FID, FLAG_REP, -1,
-							channel, sender
-						);
-					end
+					-- local action, version, NID, _, HID, _, CID, _, FID, _, PvP, _ = strsplit(":", msg);
+					-- if action ~= nil then
+					-- 	NS.DailyOnComm(
+					-- 		nil,
+					-- 		NID, NS.-1,
+					-- 		HID, NS.-1,
+					-- 		CID, NS.-1,
+					-- 		FID, NS.-1,
+					-- 		channel, sender
+					-- 	);
+					-- end
 				end
 			end
 		end
@@ -3182,50 +3131,67 @@ do	--	MAIN
 			YELL = GetServerTime() - 16,
 		};
 		local function GetCalMessage()
-			--	ADDON_MSG_BCMDAILY#reset#ID#FLAG#TIME
+			--	ADDON_MSG_BCMDAILY#ID#FLAG#TIME
 			-- local reputable = "send:1.27-bcc";
-			local alacal = ADDON_MSG_BCMDAILY .. "#" .. DLY.reset;
+			local msg = ADDON_MSG_BCMDAILY .. "#" .. ADDON_MSG_VER;
 			for index = 1, 4 do
 				local D = DLY[index];
 				if D ~= nil and D[1] ~= nil then
 					-- reputable = reputable .. ":" .. D[1] .. ":" .. GetQuestResetTime();
-					alacal = alacal .. "#" .. D[1] .. "#" .. (D[2] or FLAG_MAX) .. "#" .. (D[3] or -1);
+					msg = msg .. "#" .. D[1] .. "#" .. (D[2] or -1);
 				else
 					-- reputable = reputable .. "::";
-					alacal = alacal .. "##" .. FLAG_MAX .. "#";
+					msg = msg .. "##";
 				end
 			end
 			-- reputable = reputable .. "::";
-			return alacal;
+			return msg;
 		end
 		local function PeriodicCheck()
-			if DLY[1] ~= nil or DLY[2] ~= nil or DLY[3] ~= nil or DLY[4] ~= nil then
-				local now = GetServerTime();
-				if DLY.reset <= now then
-					wipe(DLY);
-					wipe(LT_QuestCompleted);
-					DLY.reset = now + GetQuestResetTime();
-				elseif (DLY.reset > now + 300) and (GetQuestResetTime() <= 86100) then
-					local calmsg = nil;
-					if IsInGroup(LE_PARTY_CATEGORY_HOME) and LT_BCMCD.GROUP < now then
-						LT_BCMCD.GROUP = now + 16;
-						calmsg = calmsg or GetCalMessage();
-						if IsInRaid(LE_PARTY_CATEGORY_HOME) then
-							SendAddonMessage(ADDON_PREFIX, calmsg, "RAID");
+			local now = GetServerTime();
+			local valid = false;
+			local nextreset = now + GetQuestResetTime();
+			local prevreset = nextreset - 86400;
+			for index = 1, 4 do
+				local D = DLY[index];
+				if D ~= nil and D[2] ~= nil and prevreset <= D[2] then
+					valid = true;
+				elseif D ~= nil then
+					if __is_dev then
+						if D[2] ~= nil then
+							_log_("daily clean #" .. index .. " id: " .. (D[1] or -1) .. date(" %Y-%m-%d %H:%M:%S", D[2]));
 						else
-							SendAddonMessage(ADDON_PREFIX, calmsg, "PARTY");
+							_log_("daily clean #" .. index .. " id: " .. (D[1] or -1));
 						end
 					end
-					if GetGuildInfo('player') ~= nil and LT_BCMCD.GUILD < now then
-						LT_BCMCD.GUILD = now + 16;
-						calmsg = calmsg or GetCalMessage();
-						SendAddonMessage(ADDON_PREFIX, calmsg, "GUILD");
+					wipe(D);
+				else
+					if __is_dev then
+						_log_("daily clean #" .. index);
 					end
-					if LT_BCMCD.YELL < now then
-						LT_BCMCD.YELL = now + 32;
-						calmsg = calmsg or GetCalMessage();
-						SendAddonMessage(ADDON_PREFIX, calmsg, "YELL");
+					DLY[index] = {  };
+				end
+			end
+			if valid then
+				local calmsg = nil;
+				if IsInGroup(LE_PARTY_CATEGORY_HOME) and LT_BCMCD.GROUP < now then
+					LT_BCMCD.GROUP = now + 16;
+					calmsg = calmsg or GetCalMessage();
+					if IsInRaid(LE_PARTY_CATEGORY_HOME) then
+						SendAddonMessage(ADDON_PREFIX, calmsg, "RAID");
+					else
+						SendAddonMessage(ADDON_PREFIX, calmsg, "PARTY");
 					end
+				end
+				if GetGuildInfo('player') ~= nil and LT_BCMCD.GUILD < now then
+					LT_BCMCD.GUILD = now + 16;
+					calmsg = calmsg or GetCalMessage();
+					SendAddonMessage(ADDON_PREFIX, calmsg, "GUILD");
+				end
+				if LT_BCMCD.YELL < now then
+					LT_BCMCD.YELL = now + 32;
+					calmsg = calmsg or GetCalMessage();
+					SendAddonMessage(ADDON_PREFIX, calmsg, "YELL");
 				end
 			end
 		end
@@ -3259,26 +3225,7 @@ do	--	MAIN
 				end
 				LT_ValidNPC = LT_QuestList.MonitoredNPC;
 				--
-				local _DLY = alaCalendarSV.daily;
-				local now = GetServerTime();
-				if _DLY.reset == nil or _DLY.reset < now then
-					if __is_dev then
-						if _DLY.reset == nil then
-							_log_('wipe');
-						else
-							_log_('wipe', _DLY.reset - now);
-						end
-					end
-					wipe(_DLY);
-					_DLY.reset = now + GetQuestResetTime();
-				else
-					for index = 1, 4 do
-						if _DLY[index] ~= nil and _DLY[index][1] <= 0 then
-							_DLY[index] = nil;
-						end
-					end
-				end
-				DLY = _DLY;
+				DLY = alaCalendarSV.daily;
 				--
 				GetQuestsCompleted(LT_QuestCompleted);
 				-- local completed = GetQuestsCompleted();
@@ -3304,14 +3251,14 @@ do	--	MAIN
 				local id = LT_QuestName2ID[name];
 				if id ~= nil and LT_DailyInfo[id] ~= nil then
 					local info = LT_DailyInfo[id];
-					DLY[info[3]] = { id, FLAG_NPC, GetServerTime(), };
+					DLY[info[3]] = { id, GetServerTime(), };
 					if __is_dev then
 						_log_('add', info[3], id, name);
 					end
 				end
 			end
 		end
-		function NS.GOSSIP_SHOW()print('GOSSIP_SHOW')
+		function NS.GOSSIP_SHOW()
 			local GUID = UnitGUID('npc');
 			if GUID ~= nil then
 				local _, _, _, _, _, id = strsplit("-", GUID);
@@ -3320,7 +3267,7 @@ do	--	MAIN
 				end
 			end
 		end
-		function NS.QUEST_DETAIL()print('QUEST_DETAIL')
+		function NS.QUEST_DETAIL()
 			local GUID = UnitGUID('npc');
 			if GUID ~= nil then
 				local _, _, _, _, _, id = strsplit("-", GUID);
@@ -3328,7 +3275,10 @@ do	--	MAIN
 					local id = GetQuestID();
 					local info = LT_DailyInfo[id];
 					if info ~= nil then
-						DLY[info[3]] = { id, FLAG_NPC, GetServerTime(), };
+						DLY[info[3]] = { id, GetServerTime(), };
+						if __is_dev then
+							_log_('add', info[3], id);
+						end
 					end
 				end
 			end
@@ -3338,15 +3288,6 @@ do	--	MAIN
 				LT_QuestCompleted[id] = true;
 				C_Timer.After(1.0, function() GetQuestsCompleted(LT_QuestCompleted); end);
 			end
-			-- _log_(id, LT_DailyInfo[id], LT_QuestCompleted[id])
-			-- local info = LT_DailyInfo[id];
-			-- if info ~= nil then
-			-- 	LT_QuestCompleted[id] = true;
-			-- 	local list = LT_QuestList[info[3]];
-			-- 	for index = 1, #list do
-			-- 		LT_QuestCompleted[list[index]] = true;
-			-- 	end
-			-- end
 		end
 		local DONE = DONE or "DONE";
 		local DAILY = DAILY or QUESTS_LABEL or "Daily";
@@ -3363,9 +3304,9 @@ do	--	MAIN
 					end
 					local info = LT_DailyInfo[D[1]];
 					if LT_QuestCompleted[D[1]] then
-						Tooltip:AddDoubleLine(info[1] .. "(" .. DONE .. ")", (D[2] == nil or D[2] < 0) and (info[2]) or ("*" .. info[2]), 0, 1, 0, 1, 1, 1);
+						Tooltip:AddDoubleLine(info[1] .. "(" .. DONE .. ")", info[2], 0, 1, 0, 1, 1, 1);
 					else
-						Tooltip:AddDoubleLine(info[1], (D[2] == nil or D[2] < 0) and (info[2]) or ("*" .. info[2]), 1, 0, 0, 1, 1, 1);
+						Tooltip:AddDoubleLine(info[1], info[2], 1, 0, 0, 1, 1, 1);
 					end
 				end
 			end
@@ -3373,57 +3314,37 @@ do	--	MAIN
 				Tooltip:AddLine(" ");
 			end
 		end
-		local function CheckComm(index, val, seq, time, sender)
-			local dly = DLY[index];
-			seq = tonumber(seq) or FLAG_MAX;
-			if seq == FLAG_NPC then
-				seq = FLAG_NPC_ALA;
-			end
-			val = tonumber(val);
-			time = tonumber(time) or -1;
-			if val ~= nil and val > 0 then
-				if dly == nil or dly[1] == nil then
-					DLY[index] = { val, seq, time, };
+		local function CheckComm(index, id, time, sender)
+			local D = DLY[index];
+			id = tonumber(id);
+			time = tonumber(time);
+			if id ~= nil and id > 0 then
+				if D == nil then
+					DLY[index] = { val, time, };
 					if __is_dev then
-						_log_("recv1 #" .. index .. (seq == FLAG_NPC_ALA and ' [npc]: ' or seq == FLAG_ALA and " [ala]: " or seq == FLAG_REP and " [rep]: " or " [max]: ") .. val .. " " .. sender);
+						_log_("recv add #" .. index .. " id: " .. id .. " @" .. sender .. date(" %Y-%m-%d %H:%M:%S", time));
 					end
-				else
-					if seq < FLAG_MAX_CREDIBLE then
-						if dly[3] == nil or time > dly[3] then
-							dly[1] = val;
-							dly[2] = seq;
-							dly[3] = time;
-							if __is_dev then
-								_log_("recv2 #" .. index .. (seq == FLAG_NPC_ALA and ' [npc]: ' or seq == FLAG_ALA and " [ala]: " or seq == FLAG_REP and " [rep]: " or " [max]: ") .. val .. " " .. sender);
-							end
-						end
-					elseif seq < dly[2] then
-						dly[1] = val;
-						dly[2] = seq;
-						dly[3] = time;
-					elseif seq == dly[2] then
-						if dly[1] ~= val then
-							if __is_dev then
-								_log_("deny3 #" .. index .. (seq == FLAG_NPC_ALA and ' [npc]: ' or seq == FLAG_ALA and " [ala]: " or seq == FLAG_REP and " [rep]: " or " [max]: ") .. val .. " ` " .. dly[1] .. " " .. sender);
-							end
-						end
-					else
-						return 1;
+				elseif D[1] == nil or D[2] == nil or D[2] < time then
+					if __is_dev then
+						_log_("recv ref #" .. index .. " prev: " .. D[1]);
 					end
+					D[1] = id;
+					D[2] = time;
+					if __is_dev then
+						_log_("recv ref #" .. index .. " id: " .. id .. " @" .. sender .. date(" %Y-%m-%d %H:%M:%S", time));
+					end
+				elseif D[1] ~= id then
+					return 1;
 				end
-			elseif dly ~= nil and dly[1] ~= nil then
-				return 1;
 			end
 			return 0;
 		end
-		function NS.DailyOnComm(reset, NID, NSeq, NTime, HID, HSeq, HTime, CID, CSeq, CTime, FID, FSeq, FTime, channel, sender)
-			if reset == nil or (reset - DLY.reset >= -32 and reset - DLY.reset <= 32) then
-				local v = CheckComm(1, NID, NSeq, NTime, sender) + CheckComm(2, HID, HSeq, HTime, sender) + CheckComm(3, CID, CSeq, CTime, sender) + CheckComm(4, FID, FSeq, FTime, sender);
-				if (v <= 0) and channel == "YELL" then
-					LT_BCMCD.YELL = min(LT_BCMCD.YELL + 16, GetServerTime() + 32);
-					if __is_dev then
-						_log_("Delay", LT_BCMCD.YELL - GetServerTime());
-					end
+		function NS.DailyOnComm(channel, sender, NID, NTime, HID, HTime, CID, CTime, FID, FTime)
+			local v = CheckComm(1, NID, NTime, sender) + CheckComm(2, HID, HTime, sender) + CheckComm(3, CID, CTime, sender) + CheckComm(4, FID, FTime, sender);
+			if (v <= 0) and channel == "YELL" then
+				LT_BCMCD.YELL = min(LT_BCMCD.YELL + 16, GetServerTime() + 32);
+				if __is_dev then
+					_log_("Delay", LT_BCMCD.YELL - GetServerTime());
 				end
 			end
 		end
@@ -3463,16 +3384,16 @@ do	--	MAIN
 			--
 			if GameTimeFrame then
 				GameTimeFrame:SetScript("OnMouseUp", icon_OnClick);
-				-- if GameTimeFrame_UpdateTooltip ~= nil then
-				-- 	hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
-				-- 		GameTooltip:AddLine(" ");
-				-- 		NS.AddDailyInfo(GameTooltip);
-				-- 		for _, text in next, L.TooltipLines do
-				-- 			GameTooltip:AddLine(text);
-				-- 		end
-				-- 		GameTooltip:Show();
-				-- 	end);
-				-- end
+				if GameTimeFrame_UpdateTooltip ~= nil then
+					hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+						GameTooltip:AddLine(" ");
+						NS.AddDailyInfo(GameTooltip);
+						for _, text in next, L.TooltipLines do
+							GameTooltip:AddLine(text);
+						end
+						GameTooltip:Show();
+					end);
+				end
 				if SET.show_indicator then
 					local TEXTURE = "interface\\minimap\\supertrackerarrow";
 					local NUM_TEX = 8;
@@ -3683,8 +3604,11 @@ do	--	INITIALIZE
 			alaCalendarSV.daily = {  };
 		elseif alaCalendarSV._version < 210918.01 then
 			alaCalendarSV.daily = {  };
+		elseif alaCalendarSV._version < 220113.01 then
+			alaCalendarSV.daily = {  };
 		end
-		alaCalendarSV._version = 210918.01;
+		alaCalendarSV._version = 220113.01;
+		NS:MergeGlobal(alaCalendarSV);
 		--
 		alaCalendarSV.set = alaCalendarSV.set or {
 			raid_list = Mixin({  }, NS.raid_list),
@@ -3758,10 +3682,10 @@ do	--	INITIALIZE
 		MODIFY_SAVED_VARIABLE();
 		NS.InitTimeZone();
 		NS.RegInstanceEvent();
-		-- NS.InitDaily();
+		NS.InitDaily();
 		NS.CreateUI();
 		NS.InitInstance();
-		-- NS.InitComm();
+		NS.InitComm();
 		--
 		if __ala_meta__.initpublic then __ala_meta__.initpublic(); end
 	end
@@ -4088,10 +4012,10 @@ do	--	SLASH
 	SlashCmdList["ALACALENDAR"] = function(msg)
 		msg = strlower(msg);
 		--	set
-		local _, _, pattern = strfind(msg, SET_PATTERN);
+		local pattern = strmatch(msg, SET_PATTERN);
 		if pattern then
 			for _, cmd in next, NS.set_cmd_list do
-				local _, _, pattern2 = strfind(pattern, cmd[2]);
+				local pattern2 = strmatch(pattern, cmd[2]);
 				if pattern2 then
 					if cmd[1] == 'bool' then
 						local val = nil;
@@ -4161,7 +4085,7 @@ do	--	SLASH
 			return;
 		end
 		--	default
-		if strfind(msg, "[A-Za-z0-9]+" ) then
+		if strmatch(msg, "[A-Za-z0-9]+" ) then
 			print("Invalid command: [[", msg, "]] Use: ");
 			print("  /acal set region 1/2/3/4/5");
 			print("  /acal set dst on/off");
@@ -4178,107 +4102,6 @@ do	--	SLASH
 		else
 			NS.ui_toggleGUI("CONFIG");
 		end
-	end
-end
-
-do	--	run_on_next_tick	--	execute two ticks later
-	local min_ticker_duration = 0.1;
-	if false then	--	a universal method, unnecessary here
-		local DELAY = 5;
-		local delay_run_funcs = {  };
-		for index = 1, DELAY do
-			delay_run_funcs[index] = {  };
-		end
-		local timer = 0.0;
-		local function delay_run_handler(self, elasped)
-			timer = timer + elasped;
-			if timer >= min_ticker_duration * DELAY then
-				timer = 0.0;
-				local funcs = delay_run_funcs[1];
-				while true do
-					local func = tremove(funcs, 1);
-					if func then
-						func();
-					else
-						break;
-					end
-				end
-				for index = 2, DELAY do
-					if #delay_run_funcs[index] > 0 then
-						tinsert(delay_run_funcs, tremove(delay_run_funcs));
-						return;
-					end
-				end
-				_EventHandler:SetScript("OnUpdate", nil);
-			end
-		end
-		function _EventHandler:delay_run(func, delay)
-			delay = delay and max(min(delay, DELAY), 1) or 1;
-			local dIndex = DELAY - delay + 1;
-			for index = 1, DELAY do
-				if index ~= dIndex then
-					local funcs = delay_run_funcs[index];
-					for i = 1, #funcs do
-						if func == funcs[i] then
-							tremove(funcs, i);
-							break;
-						end
-					end
-				end
-			end
-			local funcs = delay_run_funcs[dIndex];
-			for index = 1, #funcs do
-				if func == funcs[index] then
-					return;
-				end
-			end
-			tinsert(funcs, func);
-			_EventHandler:SetScript("OnUpdate", delay_run_handler);
-		end
-		function _EventHandler:frame_delay_update(frame, delay)
-			_EventHandler:delay_run(frame.update_func, delay);
-		end
-	end
-	--
-	local run_on_next_tick_func_1 = {  };
-	local run_on_next_tick_func_2 = {  };
-	local timer = 0.0;
-	local function run_on_next_tick_handler(self, elasped)
-		timer = timer + elasped;
-		if timer >= min_ticker_duration * 2 then
-			timer = 0.0;
-			while true do
-				local func = tremove(run_on_next_tick_func_1, 1);
-				if func then
-					func();
-				else
-					break;
-				end
-			end
-			if #run_on_next_tick_func_1 + #run_on_next_tick_func_2 == 0 then
-				_EventHandler:SetScript("OnUpdate", nil);
-			else
-				run_on_next_tick_func_1, run_on_next_tick_func_2 = run_on_next_tick_func_2, run_on_next_tick_func_1;
-			end
-		end
-	end
-	function _EventHandler:run_on_next_tick(func)
-		for index = 1, #run_on_next_tick_func_1 do
-			if func == run_on_next_tick_func_1[index] then
-				tremove(run_on_next_tick_func_1, index);
-				break;
-			end
-		end
-		for index = 1, #run_on_next_tick_func_2 do
-			if func == run_on_next_tick_func_2[index] then
-				return;
-			end
-		end
-		tinsert(run_on_next_tick_func_2, func);
-		_EventHandler:SetScript("OnUpdate", run_on_next_tick_handler);
-	end
-	function _EventHandler:frame_update_on_next_tick(frame)
-		_EventHandler:run_on_next_tick(frame.update_func);
 	end
 end
 

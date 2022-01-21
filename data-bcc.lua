@@ -30,6 +30,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		["ONY"] = {
 			phase = 1,
@@ -46,6 +47,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		--	DM									--	UTC-8	2019-10-16-Wed
 		--	P2	No more RAID					--	UTC-8	2019-11-15-Fri
@@ -66,6 +68,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		--	BG	Arathi Basin		--	UTC-8	2020-3-12-Thu
 		--	P4	ZG, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
@@ -84,6 +87,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		--	P5
 		["TAQ"] = {
@@ -101,6 +105,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		["RAQ"] = {
 			phase = 1,
@@ -117,6 +122,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 		--	P6
 		["NAXX"] = {
@@ -134,6 +140,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 60,
 		},
 	--	TBC
 		--	P1
@@ -152,6 +159,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 70,
 		},
 		["Magtheridon"] = {
 			phase = 1,
@@ -168,6 +176,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 70,
 		},
 		["Gruul"] = {
 			phase = 1,
@@ -184,6 +193,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 70,
 		},
 		--	P2
 		["Serpent"] = {
@@ -201,6 +211,7 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 70,
 		},
 		["Tempest"] = {
 			phase = 2,
@@ -217,6 +228,42 @@ NS.milestone = {
 			nil,
 			nil,
 			instance = true,
+			min = 70,
+		},
+		--	P3
+		["Hyjal"] = {
+			phase = 3,
+			type = "fixed_cycle",
+			-1,
+			7 * 86400,
+			nil,
+			nil,
+			0,
+			ARTWORK_PATH .. "Milestone\\lfgicon-hyjalpast",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			instance = true,
+			min = 70,
+		},
+		["BT"] = {
+			phase = 3,
+			type = "fixed_cycle",
+			-1,
+			7 * 86400,
+			nil,
+			nil,
+			0,
+			ARTWORK_PATH .. "Milestone\\lfgicon-blacktemple",
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			instance = true,
+			min = 70,
 		},
 	--
 	--	Festival
@@ -237,6 +284,7 @@ NS.milestone = {
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		festival = true,
+		min = 0,
 	},
 	["DarkMoon: Mulgore"] = {
 		phase = 1,
@@ -254,6 +302,7 @@ NS.milestone = {
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		festival = true,
+		min = 0,
 	},
 	["DarkMoon: Elwynn"] = {
 		phase = 1,
@@ -271,6 +320,7 @@ NS.milestone = {
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		{ 0.0, 91 / 128, 0.0, 91 / 128, },
 		festival = true,
+		min = 0,
 	},
 	--	P4	Fishing Extravaganza
 	["Fishing Extravaganza"] = {
@@ -290,6 +340,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		texture_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-13	04-10	05-08	Warsong Gulch
 	["Warsong Gulch"] = {
@@ -309,6 +360,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-20	04-17	05-15	Arathi Basin
 	["Arathi Basin"] = {
@@ -328,6 +380,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	--	Server Time	--	03-27	04-24	05-22	None
 	--	Server Time	--	04-03	05-01	05-29	Alterac Valley
@@ -348,6 +401,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	["Eye of the Storm"] = {
 		phase = 1,
@@ -366,6 +420,7 @@ NS.milestone = {
 		nil,
 		festival = true,
 		curtain_channel2 = true,
+		min = 0,
 	},
 	["ala"] = {
 		phase = 0,
@@ -379,25 +434,27 @@ NS.milestone = {
 		nil,
 		nil,
 		instance = true,
+		min = 0,
 	},
 };
 NS.milestone_list = {
+	"SW",
+	"BT",
+	"Hyjal",
+	"Tempest",
+	"Serpent",
+	"Gruul",
+	"Magtheridon",
+	"Kara",
+	--
 	"NAXX",
 	"TAQ",
 	"BWL",
+	"ONY",
 	"MC",
-	-- "ala",
 	"RAQ",
 	"ZG",
-	"ONY",
-	"Kara",
-	"Hyjal",
-	"Magtheridon",
-	"Serpent",
-	"Tempest",
-	"BT",
-	"Gruul",
-	"SW",
+	-- "ala",
 	"Warsong Gulch",
 	"Arathi Basin",
 	"Alterac Valley",
@@ -423,14 +480,16 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18779 * 86400 + 16 * 3600;		--
 		NS.milestone["Serpent"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
 		NS.milestone["Tempest"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
+		NS.milestone["Hyjal"][1] = 18779 * 86400 + 16 * 3600 + 238 * 86400;		--
+		NS.milestone["BT"][1] = 18779 * 86400 + 16 * 3600 + 238 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 16 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 16 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 16 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 22 * 3600;
-		NS.milestone["Warsong Gulch"][1] = 18796 * 86400 + 8 * 3600;
-		NS.milestone["Arathi Basin"][1] = 18803 * 86400 + 8 * 3600;
-		NS.milestone["Eye of the Storm"][1] = 18782 * 86400 + 8 * 3600;
-		NS.milestone["Alterac Valley"][1] = 18789 * 86400 + 8 * 3600;
+		NS.milestone["Warsong Gulch"][1] = 18782 * 86400 + 8 * 3600;
+		NS.milestone["Arathi Basin"][1] = 18789 * 86400 + 8 * 3600;
+		NS.milestone["Eye of the Storm"][1] = 18796 * 86400 + 8 * 3600;
+		NS.milestone["Alterac Valley"][1] = 18803 * 86400 + 8 * 3600;
 		NS.realmTimeZone = -8;
 		NS.set_time_zone();
 	end,
@@ -447,14 +506,16 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18779 * 86400 + 16 * 3600;		--
 		NS.milestone["Serpent"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
 		NS.milestone["Tempest"][1] = 18779 * 86400 + 16 * 3600 + 105 * 86400;		--
+		NS.milestone["Hyjal"][1] = 18779 * 86400 + 16 * 3600 + 238 * 86400;		--
+		NS.milestone["BT"][1] = 18779 * 86400 + 16 * 3600 + 238 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 13 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 13 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 13 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 22 * 3600;
-		NS.milestone["Warsong Gulch"][1] = 18796 * 86400 + 8 * 3600;
-		NS.milestone["Arathi Basin"][1] = 18803 * 86400 + 8 * 3600;
-		NS.milestone["Eye of the Storm"][1] = 18782 * 86400 + 8 * 3600;
-		NS.milestone["Alterac Valley"][1] = 18789 * 86400 + 8 * 3600;
+		NS.milestone["Warsong Gulch"][1] = 18782 * 86400 + 8 * 3600;
+		NS.milestone["Arathi Basin"][1] = 18789 * 86400 + 8 * 3600;
+		NS.milestone["Eye of the Storm"][1] = 18796 * 86400 + 8 * 3600;
+		NS.milestone["Alterac Valley"][1] = 18803 * 86400 + 8 * 3600;
 		NS.realmTimeZone = -5;
 		NS.set_time_zone();
 	end,
@@ -471,6 +532,8 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Serpent"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
 		NS.milestone["Tempest"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
+		NS.milestone["Hyjal"][1] = 18781 * 86400 + 1 * 3600 + 238 * 86400;
+		NS.milestone["BT"][1] = 18781 * 86400 + 1 * 3600 + 238 * 86400;
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 5 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 5 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 5 * 3600;
@@ -495,14 +558,16 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18780 * 86400 + 7 * 3600;		--
 		NS.milestone["Serpent"][1] = 18780 * 86400 + 7 * 3600 + 105 * 86400;		--
 		NS.milestone["Tempest"][1] = 18780 * 86400 + 7 * 3600 + 105 * 86400;		--
+		NS.milestone["Hyjal"][1] = 18780 * 86400 + 7 * 3600 + 238 * 86400;		--
+		NS.milestone["BT"][1] = 18780 * 86400 + 7 * 3600 + 238 * 86400;		--
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 + 3 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 + 3 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 + 3 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 13 * 3600;
-		NS.milestone["Warsong Gulch"][1] = 18796 * 86400 - 1 * 3600;
-		NS.milestone["Arathi Basin"][1] = 18803 * 86400 - 1 * 3600;
-		NS.milestone["Eye of the Storm"][1] = 18782 * 86400 - 1 * 3600;
-		NS.milestone["Alterac Valley"][1] = 18789 * 86400 - 1 * 3600;
+		NS.milestone["Warsong Gulch"][1] = 18782 * 86400 - 1 * 3600;
+		NS.milestone["Arathi Basin"][1] = 18789 * 86400 - 1 * 3600;
+		NS.milestone["Eye of the Storm"][1] = 18796 * 86400 - 1 * 3600;
+		NS.milestone["Alterac Valley"][1] = 18803 * 86400 - 1 * 3600;
 		NS.realmTimeZone = 1;
 		NS.set_time_zone();
 	end,
@@ -519,6 +584,8 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18781 * 86400 + 1 * 3600;
 		NS.milestone["Serpent"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
 		NS.milestone["Tempest"][1] = 18781 * 86400 + 1 * 3600 + 105 * 86400;
+		NS.milestone["Hyjal"][1] = 18781 * 86400 + 1 * 3600 + 238 * 86400;
+		NS.milestone["BT"][1] = 18781 * 86400 + 1 * 3600 + 238 * 86400;
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 4 * 3600;
@@ -543,6 +610,8 @@ NS.apply_region = {
 		NS.milestone["Gruul"][1] = 18780 * 86400 + 23 * 3600;		--	--	2021-06-03	1621465200
 		NS.milestone["Serpent"][1] = 18780 * 86400 + 23 * 3600 + 105 * 86400;		--	--	2021-06-03	1621465200
 		NS.milestone["Tempest"][1] = 18780 * 86400 + 23 * 3600 + 105 * 86400;		--	--	2021-06-03	1621465200
+		NS.milestone["Hyjal"][1] = 18780 * 86400 + 23 * 3600 + 238 * 86400;			--	--	2022-01-27	1643238000
+		NS.milestone["BT"][1] = 18780 * 86400 + 23 * 3600 + 238 * 86400;			--	--	2022-01-27	1643238000
 		NS.milestone["DarkMoon: Terokkar"][1] = 18840 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Mulgore"][1] = 18812 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18784 * 86400 - 4 * 3600;
@@ -557,21 +626,22 @@ NS.apply_region = {
 };
 
 NS.raid_list = {
+	"SW",
+	"BT",
+	"Hyjal",
+	"Tempest",
+	"Serpent",
+	"Gruul",
+	"Magtheridon",
+	"Kara",
+	--
 	"NAXX",
 	"TAQ",
-	"RAQ",
 	"BWL",
-	"ZG",
-	"MC",
 	"ONY",
-	"Kara",
-	"Hyjal",
-	"Magtheridon",
-	"Serpent",
-	"Tempest",
-	"BT",
-	"Gruul",
-	"SW",
+	"MC",
+	"RAQ",
+	"ZG",
 	-- "ala",
 };
 NS.instances_hash = {
@@ -583,12 +653,12 @@ NS.instances_hash = {
 	["MC"] = false,
 	["ONY"] = false,
 	["Kara"] = true,
-	["Hyjal"] = true,
 	["Magtheridon"] = true,
+	["Gruul"] = true,
 	["Serpent"] = true,
 	["Tempest"] = true,
+	["Hyjal"] = true,
 	["BT"] = true,
-	["Gruul"] = true,
 	["SW"] = true,
 	["Warsong Gulch"] = true,
 	["Arathi Basin"] = true,
