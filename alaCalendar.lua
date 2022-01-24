@@ -2,12 +2,14 @@
 	by ALA @ 163UI
 --]]--
 ----------------------------------------------------------------------------------------------------
-local ADDON, NS = ...;
-_G.__ala_meta__ = _G.__ala_meta__ or {  };
+local _G = _G;
 local __ala_meta__ = _G.__ala_meta__;
-__ala_meta__.cal = NS;
+local uireimp = __ala_meta__.uireimp;
 local __raidlib = __ala_meta__.__raidlib;
-local __is_dev = select(2, GetAddOnInfo("!!!!!DebugMe")) ~= nil;
+
+local ADDON, NS = ...;
+__ala_meta__.cal = NS;
+local __isdev = select(2, GetAddOnInfo("!!!!!DebugMe")) ~= nil;
 
 local _G = _G;
 local setfenv = setfenv;
@@ -1376,7 +1378,7 @@ do	--	MAIN
 				if SET.hide_calendar_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR");
 				end
-				__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
+				uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.frame_XSize, ui_style.frame_YSize);
 				frame:SetFrameStrata("HIGH");
 				frame:SetPoint("CENTER", UIParent, "CENTER", SET.cal_pos[1], SET.cal_pos[2]);
@@ -2121,7 +2123,7 @@ do	--	MAIN
 				if SET.hide_board_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR_BOARD");
 				end
-				__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
+				uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.board_XSize, ui_style.board_YSize);
 				frame:SetFrameStrata("HIGH");
 				frame:SetPoint("TOPLEFT", gui["CALENDAR"], "TOPRIGHT", 1, 0);
@@ -2640,7 +2642,7 @@ do	--	MAIN
 		function NS.ui_CreateConfigFrame()
 			local frame = CreateFrame("FRAME", "ALA_CALENDAR_CONFIG", UIParent);
 			tinsert(UISpecialFrames, "ALA_CALENDAR_CONFIG");
-			__ala_meta__._SetBackdrop(frame, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
+			uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 			frame:SetSize(620, 250);
 			frame:SetFrameStrata("DIALOG");
 			frame:SetPoint("CENTER");
@@ -2756,7 +2758,7 @@ do	--	MAIN
 			do	--	character list
 				--	char_list
 					local char_list = CreateFrame("FRAME", nil, frame);
-					__ala_meta__._SetBackdrop(char_list, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
+					uireimp._SetSimpleBackdrop(char_list, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 					char_list:SetSize(360, 400);
 					char_list:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", 2, 0);
 					char_list:EnableMouse(true);
@@ -2840,7 +2842,7 @@ do	--	MAIN
 				--
 				--	manual
 					local manual = CreateFrame("FRAME", nil, char_list);
-					__ala_meta__._SetBackdrop(manual, 0, 0.15, 0.15, 0.15, 0.9, 1, 0.0, 0.0, 0.0, 1.0);
+					uireimp._SetSimpleBackdrop(manual, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 					manual:SetSize(280, 32);
 					manual:SetPoint("BOTTOMLEFT", char_list, "TOPLEFT", 0, 2);
 					manual:EnableMouse(true);
@@ -3157,7 +3159,7 @@ do	--	MAIN
 				if D ~= nil and D[2] ~= nil and prevreset <= D[2] then
 					valid = true;
 				elseif D ~= nil then
-					if __is_dev then
+					if __isdev then
 						if D[2] ~= nil then
 							_log_("daily clean #" .. index .. " id: " .. (D[1] or -1) .. date(" %Y-%m-%d %H:%M:%S", D[2]));
 						else
@@ -3166,7 +3168,7 @@ do	--	MAIN
 					end
 					wipe(D);
 				else
-					if __is_dev then
+					if __isdev then
 						_log_("daily clean #" .. index);
 					end
 					DLY[index] = {  };
@@ -3252,11 +3254,14 @@ do	--	MAIN
 				if id ~= nil and LT_DailyInfo[id] ~= nil then
 					local info = LT_DailyInfo[id];
 					DLY[info[3]] = { id, GetServerTime(), };
-					if __is_dev then
+					if __isdev then
 						_log_('add', info[3], id, name);
 					end
 				end
 			end
+		end
+		local function DelayProcQuests()
+			ProcQuests(GetGossipAvailableQuests());
 		end
 		function NS.GOSSIP_SHOW()
 			local GUID = UnitGUID('npc');
@@ -3264,6 +3269,7 @@ do	--	MAIN
 				local _, _, _, _, _, id = strsplit("-", GUID);
 				if LT_ValidNPC[id] then
 					ProcQuests(GetGossipAvailableQuests());
+					C_Timer.After(0.2, DelayProcQuests);
 				end
 			end
 		end
@@ -3276,7 +3282,7 @@ do	--	MAIN
 					local info = LT_DailyInfo[id];
 					if info ~= nil then
 						DLY[info[3]] = { id, GetServerTime(), };
-						if __is_dev then
+						if __isdev then
 							_log_('add', info[3], id);
 						end
 					end
@@ -3321,16 +3327,16 @@ do	--	MAIN
 			if id ~= nil and id > 0 then
 				if D == nil then
 					DLY[index] = { val, time, };
-					if __is_dev then
+					if __isdev then
 						_log_("recv add #" .. index .. " id: " .. id .. " @" .. sender .. date(" %Y-%m-%d %H:%M:%S", time));
 					end
 				elseif D[1] == nil or D[2] == nil or D[2] < time then
-					if __is_dev then
-						_log_("recv ref #" .. index .. " prev: " .. D[1]);
+					if __isdev then
+						_log_("recv ref #" .. index .. " prev: " .. (D[1] or -1));
 					end
 					D[1] = id;
 					D[2] = time;
-					if __is_dev then
+					if __isdev then
 						_log_("recv ref #" .. index .. " id: " .. id .. " @" .. sender .. date(" %Y-%m-%d %H:%M:%S", time));
 					end
 				elseif D[1] ~= id then
@@ -3343,7 +3349,7 @@ do	--	MAIN
 			local v = CheckComm(1, NID, NTime, sender) + CheckComm(2, HID, HTime, sender) + CheckComm(3, CID, CTime, sender) + CheckComm(4, FID, FTime, sender);
 			if (v <= 0) and channel == "YELL" then
 				LT_BCMCD.YELL = min(LT_BCMCD.YELL + 16, GetServerTime() + 32);
-				if __is_dev then
+				if __isdev then
 					_log_("Delay", LT_BCMCD.YELL - GetServerTime());
 				end
 			end
@@ -3675,6 +3681,9 @@ do	--	INITIALIZE
 			if not VAR.manual then
 				GetPlayerInfoByGUID(GUID);
 			end
+		end
+		if alaCalendarSV.__overridedev == false then
+			__isdev = false;
 		end
 	end
 	local function init()
