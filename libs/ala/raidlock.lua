@@ -1,31 +1,26 @@
 --[[--
 	ALA@163UI
 --]]--
-_G.__ala_meta__ = _G.__ala_meta__ or {  };
-local __raidlib = __ala_meta__.__raidlib;
-if __raidlib ~= nil and __raidlib.__minor >= 2 then
-	return;
-end
-__raidlib = __raidlib or {  };
-__raidlib.__minor = 2;
-__ala_meta__.__raidlib = __raidlib;
+
+local __version = 2;
 
 local _G = _G;
-do
-	if __raidlib.__fenv == nil then
-		__raidlib.__fenv = setmetatable({  },
-				{
-					__index = _G,
-					__newindex = function(t, key, value)
-						rawset(t, key, value);
-						print("raidlib assign global", key, value);
-						return value;
-					end,
-				}
-			);
-	end
-	setfenv(1, __raidlib.__fenv);
+_G.__ala_meta__ = _G.__ala_meta__ or {  };
+local __ala_meta__ = _G.__ala_meta__;
+local __raidlib = __ala_meta__.__raidlib;
+if __raidlib ~= nil and __raidlib.__minor >= __version then
+	return;
 end
+if __raidlib ~= nil then
+	if __raidlib.Halt ~= nil then
+		__raidlib:Halt();
+	end
+else
+	__raidlib = {  };
+end
+__raidlib.__minor = __version;
+__ala_meta__.__raidlib = __raidlib;
+
 
 -->			upvalue
 local GetNumSavedInstances, GetSavedInstanceInfo, GetSavedInstanceEncounterInfo = GetNumSavedInstances, GetSavedInstanceInfo, GetSavedInstanceEncounterInfo;
@@ -289,4 +284,6 @@ function __raidlib.GetRaidLockedData(detailed)
 			end
 		end
 	end
+end
+function __raidlib:Halt()
 end
