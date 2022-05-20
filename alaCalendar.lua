@@ -222,7 +222,8 @@ local PLAYER_GUID = UnitGUID('player');
 local PLAYER_NAME = UnitName('player');
 local PLAYER_REALM_ID = tonumber(GetRealmID());
 local PLAYER_REALM_NAME = GetRealmName();
-local PLAYER_FULLNAME = PLAYER_NAME .. "-" .. PLAYER_REALM_NAME;
+local PLAYER_REALM_NAME_NOBLANK = gsub(PLAYER_REALM_NAME, " ", "");
+local PLAYER_FULLNAME = PLAYER_NAME .. "-" .. PLAYER_REALM_NAME_NOBLANK;
 
 local function info_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
@@ -3071,7 +3072,7 @@ do	--	MAIN
 		function NS.CHAT_MSG_ADDON(prefix, msg, channel, sender, target, zoneChannelID, localID, name, instanceID)
 			if prefix == ADDON_PREFIX then
 				local name, realm = strsplit("\-", sender);
-				if (realm == nil or realm == PLAYER_REALM_NAME) and name ~= PLAYER_NAME then
+				if (realm == nil or realm == PLAYER_REALM_NAME or realm == PLAYER_REALM_NAME_NOBLANK) and name ~= PLAYER_NAME then
 					sender = name;
 					local control_code = strsub(msg, 1, ADDON_MSG_CONTROL_CODE_LEN);
 					if control_code == ADDON_MSG_BCMDAILY then
@@ -3308,8 +3309,11 @@ do	--	MAIN
 			end
 		end
 		local function CheckComm(index, id, time, src, sender)
+			if src == "*" then
+				return 1;
+			end
 			local name, realm = strsplit("\-", src);
-			if realm ~= nil and realm ~= PLAYER_REALM_NAME then
+			if realm ~= nil and realm ~= PLAYER_REALM_NAME and realm ~= PLAYER_REALM_NAME_NOBLANK then
 				return 1;
 			end
 			local D = DLY[index];
@@ -3317,7 +3321,7 @@ do	--	MAIN
 			time = tonumber(time);
 			if id ~= nil and id > 0 then
 				if D == nil then
-					DLY[index] = { val, time, };
+					DLY[index] = { val, time, src, };
 					if __isdev then
 						_log_("recv add #" .. index .. " id: " .. id .. " src:" .. src .. " @" .. sender .. date(" %Y-%m-%d %H:%M:%S", time));
 					end
