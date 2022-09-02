@@ -9,6 +9,7 @@ local __raidlib = __ala_meta__.__raidlib;
 
 local ADDON, NS = ...;
 __ala_meta__.cal = NS;
+local __iswrath = select(4, GetBuildInfo()) > 30000;
 local __isdev = select(2, GetAddOnInfo("!!!!!DebugMe")) ~= nil;
 
 local _G = _G;
@@ -893,6 +894,7 @@ do	--	MAIN
 													end
 												end
 											end
+										elseif val.type == "yearly_date" then
 										end
 									end
 								end
@@ -1044,10 +1046,12 @@ do	--	MAIN
 
 	do	--	ui
 		function NS.ui_save_frame_pos()
-			local cal = gui["CALENDAR"];
-			local w, h = UIParent:GetSize();
-			SET.cal_pos[1] = (cal:GetLeft() + cal:GetRight() - w) / 2;
-			SET.cal_pos[2] = (cal:GetTop() + cal:GetBottom() - h) / 2;
+			if not __iswrath then
+				local cal = gui["CALENDAR"];
+				local w, h = UIParent:GetSize();
+				SET.cal_pos[1] = (cal:GetLeft() + cal:GetRight() - w) / 2;
+				SET.cal_pos[2] = (cal:GetTop() + cal:GetBottom() - h) / 2;
+			end
 		end
 		--
 			local function region_select(_, val)
@@ -2118,7 +2122,11 @@ do	--	MAIN
 				uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.board_XSize, ui_style.board_YSize);
 				frame:SetFrameStrata("HIGH");
-				frame:SetPoint("TOPLEFT", gui["CALENDAR"], "TOPRIGHT", 1, 0);
+				if __iswrath then
+					frame:SetPoint("LEFT", CalendarFrame, "RIGHT", 1, 0);
+				else
+					frame:SetPoint("TOPLEFT", gui["CALENDAR"], "TOPRIGHT", 1, 0);
+				end
 				frame:SetScale(SET.scale);
 				frame:SetAlpha(SET.alpha);
 				frame:EnableMouse(true);
@@ -2134,13 +2142,15 @@ do	--	MAIN
 				frame:Hide();
 				frame.list = {  };
 				frame.display_list = {  };
-				local StartMoving = frame.StartMoving;
+				local _StartMoving = frame.StartMoving;
 				function frame.StartMoving(self)
 					self:ClearAllPoints();
-					local cal = gui["CALENDAR"];
-					cal:ClearAllPoints();
-					cal:SetPoint("TOPRIGHT", self, "TOPLEFT", -1, 0);
-					StartMoving(self);
+					local cal = __iswrath and CalendarFrame or gui["CALENDAR"];
+					if cal ~= nil then
+						cal:ClearAllPoints();
+						cal:SetPoint("TOPRIGHT", self, "TOPLEFT", -1, 0);
+					end
+					_StartMoving(self);
 				end
 
 				local scroll = ALASCR(frame, nil, nil, ui_style.board_buttonHeight, funcToCreateBoardButton, funcToSetBoardButton);
@@ -2166,43 +2176,45 @@ do	--	MAIN
 				close:SetScript("OnLeave", info_OnLeave);
 				close.info_lines = { L.CLOSE, };
 				frame.close = close;
-
-				local call_calendar = CreateFrame("BUTTON", nil, frame);
-				call_calendar:SetSize(20, 20);
-				call_calendar:SetNormalTexture(ui_style.texture_arrowright);
-				call_calendar:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
-				call_calendar:GetNormalTexture():SetBlendMode("ADD");
-				call_calendar:SetPushedTexture(ui_style.texture_arrowright);
-				call_calendar:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
-				call_calendar:GetPushedTexture():SetBlendMode("ADD");
-				call_calendar:SetHighlightTexture(ui_style.texture_arrowright);
-				call_calendar:GetHighlightTexture():SetAlpha(0.25);
-				call_calendar:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -28);
-				function call_calendar:Texture(bool)
-					if bool then
-						self:SetNormalTexture(ui_style.texture_arrowright);
-						self:SetPushedTexture(ui_style.texture_arrowright);
-						self:SetHighlightTexture(ui_style.texture_arrowright);
-					else
-						self:SetNormalTexture(ui_style.texture_arrowleft);
-						self:SetPushedTexture(ui_style.texture_arrowleft);
-						self:SetHighlightTexture(ui_style.texture_arrowleft);
+				
+				if not __iswrath then
+					local call_calendar = CreateFrame("BUTTON", nil, frame);
+					call_calendar:SetSize(20, 20);
+					call_calendar:SetNormalTexture(ui_style.texture_arrowright);
+					call_calendar:GetNormalTexture():SetVertexColor(unpack(ui_style.texture_triangle_normal_color));
+					call_calendar:GetNormalTexture():SetBlendMode("ADD");
+					call_calendar:SetPushedTexture(ui_style.texture_arrowright);
+					call_calendar:GetPushedTexture():SetVertexColor(unpack(ui_style.texture_triangle_pushed_color));
+					call_calendar:GetPushedTexture():SetBlendMode("ADD");
+					call_calendar:SetHighlightTexture(ui_style.texture_arrowright);
+					call_calendar:GetHighlightTexture():SetAlpha(0.25);
+					call_calendar:SetPoint("TOPLEFT", frame, "TOPLEFT", 2, -28);
+					function call_calendar:Texture(bool)
+						if bool then
+							self:SetNormalTexture(ui_style.texture_arrowright);
+							self:SetPushedTexture(ui_style.texture_arrowright);
+							self:SetHighlightTexture(ui_style.texture_arrowright);
+						else
+							self:SetNormalTexture(ui_style.texture_arrowleft);
+							self:SetPushedTexture(ui_style.texture_arrowleft);
+							self:SetHighlightTexture(ui_style.texture_arrowleft);
+						end
 					end
+					call_calendar:Texture(false);
+					call_calendar:SetScript("OnClick", function(self)
+						NS.ui_toggleGUI("CALENDAR");
+					end);
+					call_calendar:SetScript("OnEnter", info_OnEnter);
+					call_calendar:SetScript("OnLeave", info_OnLeave);
+					call_calendar.info_lines = { L.CALL_CALENDAR, };
+					local call_calendar_str = call_calendar:CreateFontString(nil, "ARTWORK");
+					call_calendar_str:SetFont(ui_style.frameFont, ui_style.smallFontSize, "OUTLINE");
+					call_calendar_str:SetText(L["CALENDAR"]);
+					call_calendar_str:SetPoint("LEFT", call_calendar, "RIGHT", -2, 0);
+					call_calendar.str = call_calendar_str;
+					call_calendar:SetHitRectInsets(0, -call_calendar_str:GetWidth(), 0, 0);
+					frame.call_calendar = call_calendar;
 				end
-				call_calendar:Texture(false);
-				call_calendar:SetScript("OnClick", function(self)
-					NS.ui_toggleGUI("CALENDAR");
-				end);
-				call_calendar:SetScript("OnEnter", info_OnEnter);
-				call_calendar:SetScript("OnLeave", info_OnLeave);
-				call_calendar.info_lines = { L.CALL_CALENDAR, };
-				local call_calendar_str = call_calendar:CreateFontString(nil, "ARTWORK");
-				call_calendar_str:SetFont(ui_style.frameFont, ui_style.smallFontSize, "OUTLINE");
-				call_calendar_str:SetText(L["CALENDAR"]);
-				call_calendar_str:SetPoint("LEFT", call_calendar, "RIGHT", -2, 0);
-				call_calendar.str = call_calendar_str;
-				call_calendar:SetHitRectInsets(0, -call_calendar_str:GetWidth(), 0, 0);
-				frame.call_calendar = call_calendar;
 
 				local call_config = CreateFrame("BUTTON", nil, frame);
 				call_config:SetSize(20, 20);
@@ -2345,10 +2357,17 @@ do	--	MAIN
 			end
 			frame:SetScript("OnShow", function(self)
 				self:update_func();
-				gui["CALENDAR"].call_board:Texture(true);
+				if __iswrath then
+					self:ClearAllPoints();
+					self:SetPoint("LEFT", CalendarFrame, "RIGHT", 1, 0);
+				else
+					gui["CALENDAR"].call_board:Texture(true);
+				end
 			end);
 			frame:SetScript("OnHide", function(self)
-				gui["CALENDAR"].call_board:Texture(false);
+				if not __iswrath then
+					gui["CALENDAR"].call_board:Texture(false);
+				end
 			end);
 			C_Timer.NewTicker(0.2, function()
 				if frame:IsShown() then
@@ -3367,6 +3386,8 @@ do	--	MAIN
 			else
 				gui["BOARD"]:Show();
 			end
+		elseif __iswrath then
+			return GameTimeFrame_OnClick();
 		else
 			if gui["CALENDAR"]:IsShown() then
 				gui["CALENDAR"]:Hide();
@@ -3377,8 +3398,10 @@ do	--	MAIN
 	end
 	function NS.CreateUI()
 		--	GUI
-			local calendar = NS.ui_CreateCalendar();
-			gui["CALENDAR"] = calendar;
+			if not __iswrath then
+				local calendar = NS.ui_CreateCalendar();
+				gui["CALENDAR"] = calendar;
+			end
 			local board = NS.ui_CreateBoard();
 			gui["BOARD"] = board;
 			local config = NS.ui_CreateConfigFrame();
@@ -3386,17 +3409,27 @@ do	--	MAIN
 			gui["CHAR_LIST"] = config.char_list;
 			--
 			if GameTimeFrame then
-				GameTimeFrame:SetScript("OnMouseUp", icon_OnClick);
-				if GameTimeFrame_UpdateTooltip ~= nil then
-					hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+				GameTimeFrame:SetScript("OnClick", icon_OnClick);
+				GameTimeFrame:HookScript("OnUpdate", function(self)
+					if GameTooltip:IsOwned(self) then
 						GameTooltip:AddLine(" ");
 						NS.AddDailyInfo(GameTooltip);
 						for _, text in next, L.TooltipLines do
 							GameTooltip:AddLine(text);
 						end
 						GameTooltip:Show();
-					end);
-				end
+					end
+				end);
+				-- if GameTimeFrame_UpdateTooltip ~= nil then
+				-- 	hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+				-- 		GameTooltip:AddLine(" ");
+				-- 		NS.AddDailyInfo(GameTooltip);
+				-- 		for _, text in next, L.TooltipLines do
+				-- 			GameTooltip:AddLine(text);
+				-- 		end
+				-- 		GameTooltip:Show();
+				-- 	end);
+				-- end
 				if SET.show_indicator then
 					local TEXTURE = "interface\\minimap\\supertrackerarrow";
 					local NUM_TEX = 8;
@@ -3509,9 +3542,11 @@ do	--	MAIN
 		end
 	end
 	function NS.ui_update_calendar()
-		local calendar = gui["CALENDAR"];
-		NS.ui_refreshWeekTitle(calendar);
-		calendar:update_func();
+		if not __iswrath then
+			local calendar = gui["CALENDAR"];
+			NS.ui_refreshWeekTitle(calendar);
+			calendar:update_func();
+		end
 	end
 	function NS.ui_update_board()
 		local board = gui["BOARD"];
@@ -3528,24 +3563,34 @@ do	--	MAIN
 		end
 	end
 	function NS.ui_refresh_calendar()
-		NS.ui_refreshWeekTitle(gui["CALENDAR"]);
+		if not __iswrath then
+			NS.ui_refreshWeekTitle(gui["CALENDAR"]);
+		end
 	end
 	function NS.ui_refresh_config()
 		gui["CONFIG"]:Refresh();
 	end
 	function NS.ON_SET_CHANGED(att, val)
 		if att == "region" then
-			local region = gui["CALENDAR"].region;
-			region.str:SetText(L.REGION[SET.region]);
-			region:SetWidth(region.str:GetWidth() + 8);
+			if not __iswrath then
+				local region = gui["CALENDAR"].region;
+				region.str:SetText(L.REGION[SET.region]);
+				region:SetWidth(region.str:GetWidth() + 8);
+			end
 		elseif att == "dst" then
-			local dst = gui["CALENDAR"].dst;
-			dst:SetChecked(not val);
+			if not __iswrath then
+				local dst = gui["CALENDAR"].dst;
+				dst:SetChecked(not val);
+			end
 		elseif att == "scale" then
-			gui["CALENDAR"]:SetScale(SET.scale);
+			if not __iswrath then
+				gui["CALENDAR"]:SetScale(SET.scale);
+			end
 			gui["BOARD"]:SetScale(SET.scale);
 		elseif att == "alpha" then
-			gui["CALENDAR"]:SetAlpha(SET.alpha);
+			if not __iswrath then
+				gui["CALENDAR"]:SetAlpha(SET.alpha);
+			end
 			gui["BOARD"]:SetAlpha(SET.alpha);
 		end
 		NS.ui_refresh_config();
