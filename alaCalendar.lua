@@ -2878,7 +2878,7 @@ do	--	MAIN
 
 					local nameEdit = CreateFrame("EDITBOX", nil, manual);
 					nameEdit:SetHeight(24);
-					nameEdit:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+					nameEdit:SetFont(ui_style.frameFont, ui_style.frameFontSize, "");
 					nameEdit:SetAutoFocus(false);
 					nameEdit:SetJustifyH("LEFT");
 					nameEdit:Show();
