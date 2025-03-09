@@ -4,8 +4,6 @@
 ----------------------------------------------------------------------------------------------------
 local _G = _G;
 local __ala_meta__ = _G.__ala_meta__;
-local uireimp = __ala_meta__.uireimp;
-local __raidlib = __ala_meta__.__raidlib;
 
 local ADDON, NS = ...;
 __ala_meta__.cal = NS;
@@ -170,7 +168,7 @@ local LOCALE = GetLocale();
 
 		frameFont = SystemFont_Shadow_Med1:GetFont(),--=="Fonts\ARKai_T.ttf"
 		frameFontSize = min(select(2, SystemFont_Shadow_Med1:GetFont()) + 1, 15),
-		frameFontOutline = "NORMAL",
+		frameFontOutline = "",
 		weekTitleFontSize = min(select(2, SystemFont_Shadow_Med1:GetFont()) + 5, 18),
 		cellTitleFontSize = min(select(2, SystemFont_Shadow_Med1:GetFont()) + 5, 18),
 		bigFontSize = 32,
@@ -186,8 +184,6 @@ local LOCALE = GetLocale();
 	ui_style.frame_YSize = ui_style.frameTitle_YSize + ui_style.cal_YToBorder * 2 + ui_style.cal_YSize;
 	ui_style.festival_Size = min(ui_style.cell_XSize, ui_style.cell_YSize) * 0.45;
 	ui_style.cell_inst_Size = min(ui_style.cell_XSize * 0.25, ui_style.cell_YSize * 0.25);
-	--
-	_G.ala_cal_ui_style = ui_style;
 	--
 	local BIG_NUMBER = 4294967295;
 	--[[
@@ -211,7 +207,7 @@ local LOCALE = GetLocale();
 	]]
 ----------------------------------------------------------------------------------------------------
 local L = NS.L;
-L.INSTANCE = __raidlib.__raid_meta.L[LOCALE] or __raidlib.__raid_meta.L['*'];
+L.INSTANCE = __ala_meta__.__raidlib.__raid_meta.L;
 
 local ARTWORK_ICON_PATH = "Interface\\AddOns\\alaCalendar\\ARTWORK\\ICON";
 ---------------------------------------------------------------------------------------------------
@@ -226,7 +222,7 @@ local PLAYER_REALM_NAME = GetRealmName();
 local PLAYER_REALM_NAME_NOBLANK = gsub(PLAYER_REALM_NAME, " ", "");
 local PLAYER_FULLNAME = PLAYER_NAME .. "-" .. PLAYER_REALM_NAME_NOBLANK;
 
-local function info_OnEnter(self)
+function NS.info_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 	if self.info_lines then
 		for _, v in next, self.info_lines do
@@ -235,12 +231,12 @@ local function info_OnEnter(self)
 	end
 	GameTooltip:Show();
 end
-local function info_OnLeave(self)
+function NS.info_OnLeave(self)
 	if GameTooltip:IsOwned(self) then
 		GameTooltip:Hide();
 	end
 end
-local function IsEastAsiaFormat()
+function NS.IsEastAsiaFormat()
 	return LOCALE == "zhCN" or LOCALE == "zhTW" or LOCALE == "koKR";
 end
 
@@ -712,7 +708,7 @@ do	--	MAIN
 				var.first_cell_time = { Y0, M0, D0, N0, NOW0, };
 				var.center_cell_time = { Y1, M1, D1, N1, NOW1, };
 			--	gui
-				if IsEastAsiaFormat() then
+				if NS.IsEastAsiaFormat() then
 					frame:SetDateLeftText(format(L.YEAR_FORMAT, Y1));
 					frame:SetDateRightText(format(L.MONTH_FORMAT, L.MONTH[M1]));
 				else
@@ -938,7 +934,7 @@ do	--	MAIN
 			end
 			return earliest;
 		end
-		local instance_name_hash = __raidlib.__raid_meta.hash;
+		local instance_name_hash = __ala_meta__.__raidlib.__raid_meta.hash;
 		function NS.proc_locked_down_instance()
 			for _, inst in next, SET.raid_list do
 				wipe(VAR[inst]);
@@ -1054,24 +1050,6 @@ do	--	MAIN
 			end
 		end
 		--
-			local function region_select(_, val)
-				SET.region = val;
-				NS.apply_region[val]();
-				NS.ui_update_calendar();
-				NS.ui_refresh_config();
-				NS.ON_SET_CHANGED("region", val);
-			end
-			local list_drop_meta = {
-				handler = region_select,
-				elements = {  },
-			};
-			for region = 1, 6 do
-				local drop = {
-					text = L.REGION[region],
-					para = { region, },
-				};
-				tinsert(list_drop_meta.elements, drop);
-			end
 			local function cell_OnEnter(self)
 				local now = self.now;
 				if now then
@@ -1084,6 +1062,9 @@ do	--	MAIN
 						if s then
 							local val = NS.milestone[inst];
 							local first_seen = val.dst and (val[1] - dst_ofs) or val[1];
+							if L.INSTANCE[inst] == nil then
+								print(inst,s)
+							end
 							if val.instance then
 								GameTooltip:AddDoubleLine(L.INSTANCE[inst] .. L.INSTANCE_RESET, date_engine.built_in_date(L.FORMAT_CLOCK, (first_seen % 86400)), 1.0, 1.0, 1.0);
 							elseif val.festival then
@@ -1101,7 +1082,7 @@ do	--	MAIN
 					end
 					GameTooltip:Show();
 				else
-					info_OnLeave(self);
+					NS.info_OnLeave(self);
 				end
 			end
 			local function cal_OnMouseWheel(self, delta)
@@ -1128,7 +1109,7 @@ do	--	MAIN
 					NS.ui_save_frame_pos()
 				end);
 				cell:SetScript("OnEnter", cell_OnEnter);
-				cell:SetScript("OnLeave", info_OnLeave);
+				cell:SetScript("OnLeave", NS.info_OnLeave);
 				-- cell:SetScript("OnMouseWheel", cell_OnMouseWheel);
 				cell:Show();
 				cell.frame = parent:GetParent();
@@ -1374,7 +1355,7 @@ do	--	MAIN
 				if SET.hide_calendar_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR");
 				end
-				uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
+				__ala_meta__.uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.frame_XSize, ui_style.frame_YSize);
 				frame:SetFrameStrata("HIGH");
 				frame:SetPoint("CENTER", UIParent, "CENTER", SET.cal_pos[1], SET.cal_pos[2]);
@@ -1466,47 +1447,44 @@ do	--	MAIN
 
 			do	--	year & month explorer
 				local drop_table_year = {
-					handler = function(_, frame, val)
-						local var = frame.var;
-						var.month_ofs = var.month_ofs + val * 12;
-						frame.update_func();
+					handler = function(_, param1, param2)
+						local var = param2[1].var;
+						var.month_ofs = var.month_ofs + param2[2] * 12;
+						param2[1].update_func();
 					end,
-					elements = {  },
 				};
 				for index = 1, 10 do
-					drop_table_year.elements[index] = { para = { frame, index - 5, }, };
+					drop_table_year[index] = { param = { frame, index - 5, }, };
 				end
 				local drop_table_month = {
-					handler = function(_, frame, val)
-						local var = frame.var;
-						var.month_ofs = var.month_ofs - var.center_cell_time[2] + val;
+					handler = function(_, param1, param2)
+						local var = param2[1].var;
+						var.month_ofs = var.month_ofs - var.center_cell_time[2] + param2[2];
 						var.line_ofs = 0;
-						frame.update_func();
+						param2[1].update_func();
 					end,
-					elements = {  },
 				};
 				for index = 1, 12 do
-					drop_table_month.elements[index] = { para = { frame, index, }, text = L.MONTH[index], };
+					drop_table_month[index] = { param = { frame, index, }, text = L.MONTH[index], };
 				end
 
 				local date_title_L = CreateFrame("BUTTON", nil, frame);
 				date_title_L:SetSize(48, 24);
 				date_title_L:SetPoint("TOPRIGHT", frame, "TOP", 0, -16);
 				date_title_L:SetScript("OnClick", function(self)
-					if IsEastAsiaFormat() then
+					if NS.IsEastAsiaFormat() then
 						local Y1 = frame.var.center_cell_time[1];
-						local elements = drop_table_year.elements;
 						for index = 1, 10 do
 							local Y = Y1 + index - 5;
-							elements[index].text = tostring(Y);
+							drop_table_year[index].text = tostring(Y);
 						end
-						ALADROP(self, "BOTTOM", drop_table_year);
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", drop_table_year);
 					else
-						ALADROP(self, "BOTTOM", drop_table_month);
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", drop_table_month);
 					end
 				end);
 				date_title_L:SetScript("OnMouseWheel", function(self, delta)
-					if IsEastAsiaFormat() then
+					if NS.IsEastAsiaFormat() then
 						local var = frame.var;
 						var.month_ofs = var.month_ofs + delta * 12;
 						var.line_ofs = 0;
@@ -1527,20 +1505,19 @@ do	--	MAIN
 				date_title_R:SetSize(48, 24);
 				date_title_R:SetPoint("TOPLEFT", frame, "TOP", 0, -16);
 				date_title_R:SetScript("OnClick", function(self)
-					if IsEastAsiaFormat() then
-						ALADROP(self, "BOTTOM", drop_table_month);
+					if NS.IsEastAsiaFormat() then
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", drop_table_month);
 					else
 						local Y1 = frame.var.center_cell_time[1];
-						local elements = drop_table_year.elements;
 						for index = 1, 10 do
 							local Y = Y1 + index - 5;
-							elements[index].text = tostring(Y);
+							drop_table_year[index].text = tostring(Y);
 						end
-						ALADROP(self, "BOTTOM", drop_table_year);
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", drop_table_year);
 					end
 				end);
 				date_title_R:SetScript("OnMouseWheel", function(self, delta)
-					if IsEastAsiaFormat() then
+					if NS.IsEastAsiaFormat() then
 						local var = frame.var;
 						var.month_ofs = var.month_ofs + delta;
 						var.line_ofs = 0;
@@ -1671,8 +1648,8 @@ do	--	MAIN
 				close:SetScript("OnClick", function()
 					frame:Hide();
 				end);
-				close:SetScript("OnEnter", info_OnEnter);
-				close:SetScript("OnLeave", info_OnLeave);
+				close:SetScript("OnEnter", NS.info_OnEnter);
+				close:SetScript("OnLeave", NS.info_OnLeave);
 				close.info_lines = { L.CLOSE, };
 				frame.close = close;
 
@@ -1686,7 +1663,7 @@ do	--	MAIN
 				region.str = region_str;
 				region:SetWidth(region_str:GetWidth() + 8);
 				region:SetScript("OnClick", function(self)
-					ALADROP(self, "BOTTOMLEFT", NS.set_cmd_list[1][8]);
+					__ala_meta__.__menulib.ShowMenu(self, "BOTTOMLEFT", NS.set_cmd_list[1][8]);
 				end);
 				frame.region = region;
 
@@ -1755,8 +1732,8 @@ do	--	MAIN
 				call_board:SetScript("OnClick", function(self)
 					NS.ui_toggleGUI("BOARD");
 				end);
-				call_board:SetScript("OnEnter", info_OnEnter);
-				call_board:SetScript("OnLeave", info_OnLeave);
+				call_board:SetScript("OnEnter", NS.info_OnEnter);
+				call_board:SetScript("OnLeave", NS.info_OnLeave);
 				call_board.info_lines = { L.CALL_BOARD, };
 				-- local call_board_str = call_board:CreateFontString(nil, "ARTWORK");
 				-- call_board_str:SetFont(ui_style.frameFont, ui_style.smallFontSize, "OUTLINE");
@@ -1785,29 +1762,28 @@ do	--	MAIN
 		--
 			local board_drop_meta_add ={
 				text = L.LOCKDOWN_ADD,
-				para = { 1, },
+				param = { 1, },
 			};
 			local board_drop_meta_del ={
 				text = L.LOCKDOWN_DEL,
-				para = { 2, },
+				param = { 2, },
 			};
 			local board_drop_meta = {
-				handler = function(_, action, key, inst)
-					if action == 1 then
-						local VAR = AVAR[key];
-						local var = VAR[inst];
+				handler = function(_, param1, param2)
+					if param2[1] == 1 then
+						local VAR = AVAR[param2[2]];
+						local var = VAR[param2[3]];
 						var[1] = true;
 						var[2] = date_engine.inst_next_reset(inst);
 						gui["BOARD"].scroll:Update();
-					elseif action == 2 then
-						local VAR = AVAR[key];
-						local var = VAR[inst];
+					elseif param2[1] == 2 then
+						local VAR = AVAR[param2[2]];
+						local var = VAR[param2[3]];
 						var[1] = false;
 						var[2] = nil;
 						gui["BOARD"].scroll:Update();
 					end
 				end,
-				elements = {  },
 			};
 			local function board_button_OnClick(self, button)
 				local frame = self.frame;
@@ -1825,15 +1801,15 @@ do	--	MAIN
 					if VAR.manual then
 						local var = VAR[inst];
 						if var[1] then
-							board_drop_meta_del.para[2] = key;
-							board_drop_meta_del.para[3] = inst;
-							board_drop_meta.elements[1] = board_drop_meta_del;
+							board_drop_meta_del.param[2] = key;
+							board_drop_meta_del.param[3] = inst;
+							board_drop_meta[1] = board_drop_meta_del;
 						else
-							board_drop_meta_add.para[2] = key;
-							board_drop_meta_add.para[3] = inst;
-							board_drop_meta.elements[1] = board_drop_meta_add;
+							board_drop_meta_add.param[2] = key;
+							board_drop_meta_add.param[3] = inst;
+							board_drop_meta[1] = board_drop_meta_add;
 						end
-						ALADROP(self, "BOTTOM", board_drop_meta);
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", board_drop_meta);
 					end
 				end
 			end
@@ -1923,7 +1899,7 @@ do	--	MAIN
 
 				button:SetScript("OnClick", board_button_OnClick);
 				button:SetScript("OnEnter", board_button_OnEnter);
-				button:SetScript("OnLeave", info_OnLeave);
+				button:SetScript("OnLeave", NS.info_OnLeave);
 
 				local frame = parent:GetParent():GetParent();
 				button.frame = frame;
@@ -2119,7 +2095,7 @@ do	--	MAIN
 				if SET.hide_board_on_esc then
 					tinsert(UISpecialFrames, "ALA_CALENDAR_BOARD");
 				end
-				uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
+				__ala_meta__.uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 				frame:SetSize(ui_style.board_XSize, ui_style.board_YSize);
 				frame:SetFrameStrata("HIGH");
 				if __iswrath then
@@ -2159,7 +2135,7 @@ do	--	MAIN
 					_StartMoving(self);
 				end
 
-				local scroll = ALASCR(frame, nil, nil, ui_style.board_buttonHeight, funcToCreateBoardButton, funcToSetBoardButton);
+				local scroll = __ala_meta__.__scrolllib.CreateScrollFrame(frame, nil, nil, ui_style.board_buttonHeight, funcToCreateBoardButton, funcToSetBoardButton);
 				scroll:SetPoint("BOTTOMLEFT", 4, 28);
 				scroll:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, - (ui_style.frameTitle_YSize + ui_style.cal_YToBorder));
 				-- scroll:SetPoint("TOPRIGHT", - 4, - 4);
@@ -2178,8 +2154,8 @@ do	--	MAIN
 				close:SetScript("OnClick", function()
 					frame:Hide();
 				end);
-				close:SetScript("OnEnter", info_OnEnter);
-				close:SetScript("OnLeave", info_OnLeave);
+				close:SetScript("OnEnter", NS.info_OnEnter);
+				close:SetScript("OnLeave", NS.info_OnLeave);
 				close.info_lines = { L.CLOSE, };
 				frame.close = close;
 				
@@ -2210,8 +2186,8 @@ do	--	MAIN
 					call_calendar:SetScript("OnClick", function(self)
 						NS.ui_toggleGUI("CALENDAR");
 					end);
-					call_calendar:SetScript("OnEnter", info_OnEnter);
-					call_calendar:SetScript("OnLeave", info_OnLeave);
+					call_calendar:SetScript("OnEnter", NS.info_OnEnter);
+					call_calendar:SetScript("OnLeave", NS.info_OnLeave);
 					call_calendar.info_lines = { L.CALL_CALENDAR, };
 					local call_calendar_str = call_calendar:CreateFontString(nil, "ARTWORK");
 					call_calendar_str:SetFont(ui_style.frameFont, ui_style.smallFontSize, "OUTLINE");
@@ -2236,8 +2212,8 @@ do	--	MAIN
 				call_config:SetScript("OnClick", function(self)
 					NS.ui_toggleGUI("CONFIG");
 				end);
-				call_config:SetScript("OnEnter", info_OnEnter);
-				call_config:SetScript("OnLeave", info_OnLeave);
+				call_config:SetScript("OnEnter", NS.info_OnEnter);
+				call_config:SetScript("OnLeave", NS.info_OnLeave);
 				call_config.info_lines = { L.CALL_CONFIG, };
 				frame.call_config = call_config;
 
@@ -2278,8 +2254,8 @@ do	--	MAIN
 					end
 					gui["CONFIG"].call_char_list:Texture(false);
 				end);
-				call_char_list:SetScript("OnEnter", info_OnEnter);
-				call_char_list:SetScript("OnLeave", info_OnLeave);
+				call_char_list:SetScript("OnEnter", NS.info_OnEnter);
+				call_char_list:SetScript("OnLeave", NS.info_OnLeave);
 				call_char_list.info_lines = { L.CALL_CALENDAR, };
 				local call_char_list_str = call_char_list:CreateFontString(nil, "ARTWORK");
 				call_char_list_str:SetFont(ui_style.frameFont, ui_style.smallFontSize, "OUTLINE");
@@ -2387,31 +2363,29 @@ do	--	MAIN
 		end
 		--
 			local manual_drop_meta = {
-				handler = function(_, manual, class, drop, text)
+				handler = function(_, param1, param2)
+					local manual, class, drop, text = param2[1], param2[2], param2[3], param2[4];
 					manual.class = class;
 					drop.label:SetText(text);
 				end,
-				elements = {  },
 			};
 			local char_drop_meta_del = {
 				text = L.CHAR_DEL,
-				para = { 1, },
+				param = { 1, },
 			};
 			local char_drop_meta_mod = {
 				text = L.CHAR_MOD,
-				para = { 2, },
+				param = { 2, },
 			};
 			local char_drop_meta = {
-				handler = function(_, action, index)
-					if action == 1 then
-						NS.del_char(index);
-					elseif action == 2 then
-						gui["CONFIG"]:OpenManual(_, SET.char_list[index]);
+				handler = function(_, param1, param2)
+					if param2[1] == 1 then
+						NS.del_char(param2[2]);
+					elseif param2[1] == 2 then
+						gui["CONFIG"]:OpenManual(_, SET.char_list[param2[2]]);
 					end
 				end,
-				elements = {
-					char_drop_meta_del,
-				},
+				char_drop_meta_del,
 			};
 			local function char_button_OnClick(self, button)
 				local list = SET.char_list;
@@ -2422,14 +2396,14 @@ do	--	MAIN
 					local key = list[data_index];
 					if key ~= PLAYER_GUID then
 						local VAR = AVAR[key];
-						char_drop_meta_del.para[2] = data_index;
+						char_drop_meta_del.param[2] = data_index;
 						if VAR.manual then
-							char_drop_meta.elements[2] = char_drop_meta_mod;
-							char_drop_meta_mod.para[2] = data_index;
+							char_drop_meta[2] = char_drop_meta_mod;
+							char_drop_meta_mod.param[2] = data_index;
 						else
-							char_drop_meta.elements[2] = nil;
+							char_drop_meta[2] = nil;
 						end
-						ALADROP(self, "BOTTOM", char_drop_meta);
+						__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", char_drop_meta);
 					end
 				end
 			end
@@ -2473,7 +2447,7 @@ do	--	MAIN
 
 				button:SetScript("OnClick", char_button_OnClick);
 				button:SetScript("OnEnter", char_button_OnEnter);
-				button:SetScript("OnLeave", info_OnLeave);
+				button:SetScript("OnLeave", NS.info_OnLeave);
 
 				local frame = parent:GetParent():GetParent();
 				button.frame = frame;
@@ -2555,7 +2529,7 @@ do	--	MAIN
 				check:SetHitRectInsets(0, 0, 0, 0);
 				check:Show();
 				local str = parent:CreateFontString(nil, "ARTWORK");
-				str:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+				str:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 				str:SetText(text);
 				check.fontString = str;
 				str:SetPoint("LEFT", check, "RIGHT", 0, 0);
@@ -2567,7 +2541,7 @@ do	--	MAIN
 				return check;
 			end
 			local function drop_OnClick(self)
-				ALADROP(self, "BOTTOM", self.meta);
+				__ala_meta__.__menulib.ShowMenu(self, "BOTTOM", self.meta);
 			end 
 			local function ui_config_CreateDrop(parent, key, text, meta)
 				local drop = CreateFrame("BUTTON", nil, parent);
@@ -2582,25 +2556,25 @@ do	--	MAIN
 				drop:GetHighlightTexture():SetTexCoord(6 / 32, 26 / 32, 6 / 32, 26 / 32);
 				drop:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
 				local label = parent:CreateFontString(nil, "ARTWORK");
-				label:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+				label:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 				label:SetText(gsub(text, "%%[a-z]", ""));
 				label:SetPoint("LEFT", drop, "RIGHT", 0, 0);
 				drop.label = label;
 				local str = parent:CreateFontString(nil, "ARTWORK");
-				str:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+				str:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 				str:SetPoint("TOPLEFT", label, "BOTTOMLEFT", 0, -2);
 				str:SetVertexColor(0.0, 1.0, 0.0, 1.0);
 				drop.fontString = str;
 				drop.key = key;
 				drop.meta = meta;
-				for _, v in next, meta.elements do
-					v.para[1] = drop;
+				for i = 1, #meta do
+					meta[i].param[1] = drop;
 				end
 				drop:SetScript("OnClick", drop_OnClick);
 				function drop:SetVal(val)
-					for _, v in next, self.meta.elements do
-						if v.para[2] == val then
-							self.fontString:SetText(v.text);
+					for i = 1, #meta do
+						if meta[i].param[2] == val then
+							self.fontString:SetText(meta[i].text);
 							break;
 						end
 					end
@@ -2609,7 +2583,7 @@ do	--	MAIN
 			end
 			local function ui_config_CreateSlider(parent, key, text, minVal, maxVal, step, OnValueChanged)
 				local label = parent:CreateFontString(nil, "ARTWORK");
-				label:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+				label:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 				label:SetText(gsub(text, "%%[a-z]", ""));
 				local slider = CreateFrame("SLIDER", nil, parent, "OptionsSliderTemplate");
 				slider:SetWidth(200);
@@ -2661,7 +2635,7 @@ do	--	MAIN
 		function NS.ui_CreateConfigFrame()
 			local frame = CreateFrame("FRAME", "ALA_CALENDAR_CONFIG", UIParent);
 			tinsert(UISpecialFrames, "ALA_CALENDAR_CONFIG");
-			uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
+			__ala_meta__.uireimp._SetSimpleBackdrop(frame, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 			frame:SetSize(620, 250);
 			frame:SetFrameStrata("DIALOG");
 			frame:SetPoint("CENTER");
@@ -2687,8 +2661,8 @@ do	--	MAIN
 			close:SetScript("OnClick", function(self)
 				self.frame:Hide();
 			end);
-			close:SetScript("OnEnter", info_OnEnter);
-			close:SetScript("OnLeave", info_OnLeave);
+			close:SetScript("OnEnter", NS.info_OnEnter);
+			close:SetScript("OnLeave", NS.info_OnLeave);
 			close.info_lines = { L.CLOSE, };
 			close.frame = frame;
 			frame.close = close;
@@ -2704,8 +2678,8 @@ do	--	MAIN
 			reset:SetScript("OnClick", function()
 				StaticPopup_Show("alaCalendar_RestAllSettings");
 			end);
-			reset:SetScript("OnEnter", info_OnEnter);
-			reset:SetScript("OnLeave", info_OnLeave);
+			reset:SetScript("OnEnter", NS.info_OnEnter);
+			reset:SetScript("OnLeave", NS.info_OnLeave);
 			reset.info_lines = { L.RESET_ALL_SETTINGS, };
 			frame.reset = reset;
 			--
@@ -2777,7 +2751,7 @@ do	--	MAIN
 			do	--	character list
 				--	char_list
 					local char_list = CreateFrame("FRAME", nil, frame);
-					uireimp._SetSimpleBackdrop(char_list, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
+					__ala_meta__.uireimp._SetSimpleBackdrop(char_list, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 					char_list:SetSize(360, 400);
 					char_list:SetPoint("BOTTOMLEFT", frame, "BOTTOMRIGHT", 2, 0);
 					char_list:EnableMouse(true);
@@ -2792,7 +2766,7 @@ do	--	MAIN
 					char_list:Hide();
 					frame.char_list = char_list;
 
-					local scroll = ALASCR(char_list, nil, nil, ui_style.char_buttonHeight, funcToCreateCharButton, funcToSetCharButton);
+					local scroll = __ala_meta__.__scrolllib.CreateScrollFrame(char_list, nil, nil, ui_style.char_buttonHeight, funcToCreateCharButton, funcToSetCharButton);
 					scroll:SetPoint("BOTTOMLEFT", 4, 12);
 					scroll:SetPoint("TOPRIGHT", - 4, - 24);
 					char_list.scroll = scroll;
@@ -2853,7 +2827,7 @@ do	--	MAIN
 					end);
 					frame.call_char_list = call;
 					local str = call:CreateFontString(nil, "OVERLAY");
-					str:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+					str:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 					str:SetPoint("RIGHT", call, "LEFT", -2, 0);
 					str:SetVertexColor(1.0, 1.0, 1.0, 1.0);
 					str:SetText(L.CHAR_LIST);
@@ -2861,7 +2835,7 @@ do	--	MAIN
 				--
 				--	manual
 					local manual = CreateFrame("FRAME", nil, char_list);
-					uireimp._SetSimpleBackdrop(manual, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
+					__ala_meta__.uireimp._SetSimpleBackdrop(manual, 0, 1, 0.15, 0.15, 0.15, 0.9, 0.0, 0.0, 0.0, 1.0);
 					manual:SetSize(280, 32);
 					manual:SetPoint("BOTTOMLEFT", char_list, "TOPLEFT", 0, 2);
 					manual:EnableMouse(true);
@@ -2878,7 +2852,7 @@ do	--	MAIN
 
 					local nameEdit = CreateFrame("EDITBOX", nil, manual);
 					nameEdit:SetHeight(24);
-					nameEdit:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+					nameEdit:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 					nameEdit:SetAutoFocus(false);
 					nameEdit:SetJustifyH("LEFT");
 					nameEdit:Show();
@@ -2919,11 +2893,11 @@ do	--	MAIN
 					classDrop:GetHighlightTexture():SetTexCoord(6 / 32, 26 / 32, 6 / 32, 26 / 32);
 					classDrop:GetHighlightTexture():SetVertexColor(0.5, 0.5, 0.5, 0.5);
 					local label = classDrop:CreateFontString(nil, "ARTWORK");
-					label:SetFont(ui_style.frameFont, ui_style.frameFontSize, "NORMAL");
+					label:SetFont(ui_style.frameFont, ui_style.frameFontSize, ui_style.frameFontOutline);
 					label:SetPoint("LEFT", classDrop, "RIGHT", 0, 0);
 					classDrop.label = label;
 					for class, lClass in next, L.COLORED_CLASS do
-						tinsert(manual_drop_meta.elements, { text = lClass, para = { manual, class, classDrop, lClass, }, });
+						tinsert(manual_drop_meta, { text = lClass, param = { manual, class, classDrop, lClass, }, });
 					end
 					classDrop.meta = manual_drop_meta;
 					classDrop:SetScript("OnClick", drop_OnClick);
@@ -3036,7 +3010,7 @@ do	--	MAIN
 	local ADDON_MSG_CONTROL_CODE_LEN = 6;
 	local ADDON_MSG_QUERY = "_q_cal";
 	local ADDON_MSG_REPLY = "_r_cal";
-	local ADDON_MSG_BCMDAILY = "_b_dlu";
+	local ADDON_MSG_BCMDAILY = "DLYBCM";
 	local ADDON_MSG_VER = 1;
 	local ADDON_MSG_RECEIVER_MIN_VER = 1;
 	do	--	comm
@@ -3146,7 +3120,7 @@ do	--	MAIN
 			--	ADDON_MSG_BCMDAILY#ID#FLAG#TIME
 			-- local reputable = "send:1.27-bcc";
 			local msg = ADDON_MSG_BCMDAILY .. "#" .. ADDON_MSG_RECEIVER_MIN_VER .. "#" .. ADDON_MSG_VER;
-			for index = 1, 4 do
+			for index = 1, #LT_QuestList do
 				local D = DLY[index];
 				if D ~= nil and D[1] ~= nil then
 					-- reputable = reputable .. ":" .. D[1] .. ":" .. GetQuestResetTime();
@@ -3164,7 +3138,7 @@ do	--	MAIN
 			local valid = false;
 			local nextreset = now + GetQuestResetTime();
 			local prevreset = nextreset - 86400;
-			for index = 1, 4 do
+			for index = 1, #LT_QuestList do
 				local D = DLY[index];
 				if D ~= nil and D[2] ~= nil and prevreset <= D[2] then
 					valid = true;
@@ -3211,31 +3185,26 @@ do	--	MAIN
 		end
 		function NS.InitDaily()
 			if LT_QuestList ~= nil then
-				local list = LT_QuestList[1];
-				for id, val in next, list do
-					local name = C_QuestLog.GetQuestInfo(id) or val[1];
-					local area = C_Map.GetAreaInfo(val[2]);
-					LT_DailyInfo[id] = { "  |Tinterface\\lfgframe\\battlenetworking9:0:0:0:-2:64:64:11:52:12:53|t" .. (DUNGEON_DIFFICULTY1 or "Normal"), area .. "  ", 1, };
-					LT_QuestName2ID[name] = id;
-				end
-				local list = LT_QuestList[2];
-				for id, val in next, list do
-					local name = C_QuestLog.GetQuestInfo(id) or val[1];
-					local area = C_Map.GetAreaInfo(val[2]);
-					LT_DailyInfo[id] = { "  |Tinterface\\lfgframe\\lfg:0:0:0:-2:64:32:2:29:2:29|t" .. (DUNGEON_DIFFICULTY2 or "Heroic"), area .. "  ", 2, };
-					LT_QuestName2ID[name] = id;
-				end
-				local list = LT_QuestList[3];
-				for id, val in next, list do
-					local name = C_QuestLog.GetQuestInfo(id) or val[1];
-					LT_DailyInfo[id] = { "  |T133971:0:0:0:-2:64:64:3:61:3:61|t" .. (PROFESSIONS_COOKING or "Cooking"), name .. "  ", 3, };
-					LT_QuestName2ID[name] = id;
-				end
-				local list = LT_QuestList[4];
-				for id, val in next, list do
-					local name = C_QuestLog.GetQuestInfo(id) or val[1];
-					LT_DailyInfo[id] = { "  |T136245:0:0:0:-2:64:64:3:61:3:61|t" .. (PROFESSIONS_FISHING or "Fishing"), name .. "  ", 4, };
-					LT_QuestName2ID[name] = id;
+				for index = 1, #LT_QuestList do
+					local list = LT_QuestList[index];
+					if list.type == 'inst' then
+						for id, val in next, list do
+							if id ~= 'type' and id ~= 'head' and id ~= 'hide' then
+								local name = C_QuestLog.GetQuestInfo(id) or val[1];
+								local area = C_Map.GetAreaInfo(val[2]);
+								LT_DailyInfo[id] = { "  " .. list.head, area .. "  ", index, };
+								LT_QuestName2ID[name] = id;
+							end
+						end
+					elseif list.type == 'prof' then
+						for id, val in next, list do
+							if id ~= 'type' and id ~= 'head' and id ~= 'hide' then
+								local name = C_QuestLog.GetQuestInfo(id) or val[1];
+								LT_DailyInfo[id] = { "  " .. list.head, name .. "  ", index, };
+								LT_QuestName2ID[name] = id;
+							end
+						end
+					end
 				end
 				LT_ValidNPC = LT_QuestList.MonitoredNPC;
 				--
@@ -3313,7 +3282,7 @@ do	--	MAIN
 		function NS.AddDailyInfo(Tooltip)
 			local got = false;
 			Tooltip:AddDoubleLine(DAILY, GetDailyQuestsCompleted() .. " / " ..  GetMaxDailyQuests(), 1, 1, 0, 1, 1, 1);
-			for index = 1, 4 do
+			for index = 1, #LT_QuestList do
 				local D = DLY[index];
 				if D ~= nil and D[1] ~= nil then
 					if got == false then
@@ -3417,27 +3386,27 @@ do	--	MAIN
 			gui["CHAR_LIST"] = config.char_list;
 			--
 			if GameTimeFrame then
-				GameTimeFrame:SetScript("OnClick", icon_OnClick);
-				GameTimeFrame:HookScript("OnUpdate", function(self)
-					if GameTooltip:IsOwned(self) then
-						GameTooltip:AddLine(" ");
-						NS.AddDailyInfo(GameTooltip);
-						for _, text in next, L.TooltipLines do
-							GameTooltip:AddLine(text);
-						end
-						GameTooltip:Show();
-					end
-				end);
-				-- if GameTimeFrame_UpdateTooltip ~= nil then
-				-- 	hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+				GameTimeFrame:SetScript("OnMouseUp", icon_OnClick);
+				-- GameTimeFrame:HookScript("OnUpdate", function(self)
+				-- 	if GameTooltip:IsOwned(self) then
 				-- 		GameTooltip:AddLine(" ");
 				-- 		NS.AddDailyInfo(GameTooltip);
 				-- 		for _, text in next, L.TooltipLines do
 				-- 			GameTooltip:AddLine(text);
 				-- 		end
 				-- 		GameTooltip:Show();
-				-- 	end);
-				-- end
+				-- 	end
+				-- end);
+				if GameTimeFrame_UpdateTooltip ~= nil then
+					hooksecurefunc("GameTimeFrame_UpdateTooltip", function()
+						GameTooltip:AddLine(" ");
+						NS.AddDailyInfo(GameTooltip);
+						for _, text in next, L.TooltipLines do
+							GameTooltip:AddLine(text);
+						end
+						GameTooltip:Show();
+					end);
+				end
 				if SET.show_indicator then
 					-- local TEXTURE = "interface\\minimap\\supertrackerarrow";
 					-- local NUM_TEX = 8;
@@ -3617,7 +3586,7 @@ do	--	INITIALIZE
 		region = temp[LOCALE] or 4,
 		dst = false;
 		use_realm_time_zone = false,
-		first_col_day = IsEastAsiaFormat() and 1 or 0;
+		first_col_day = NS.IsEastAsiaFormat() and 1 or 0;
 		instance_icon = true,
 		instance_text = false,
 		show_indicator = true,
@@ -3722,6 +3691,12 @@ do	--	INITIALIZE
 					end
 				end
 			end
+			for key, VAR in next, AVAR do
+				for index = 1, #SET.raid_list do
+					local inst = SET.raid_list[index];
+					VAR[inst] = VAR[inst] or {  };
+				end
+			end
 		end
 		for GUID, VAR in next, AVAR do
 			if not VAR.manual then
@@ -3797,35 +3772,33 @@ do	--	SLASH
 			end,
 			[7] = 'drop',
 			[8] = {
-				handler = function(_, drop, val)
-					SlashCmdList["ALACALENDAR"]("setregion" .. val);
-					drop:SetVal(val);
+				handler = function(_, param1, param2)
+					SlashCmdList["ALACALENDAR"]("setregion" .. param2[2]);
+					param2[1]:SetVal(param2[2]);
 				end,
-				elements = {
-					{
-						text = L.REGION[1],
-						para = { nil, 1, },
-					},
-					{
-						text = L.REGION[2],
-						para = { nil, 2, },
-					},
-					{
-						text = L.REGION[3],
-						para = { nil, 3, },
-					},
-					{
-						text = L.REGION[4],
-						para = { nil, 4, },
-					},
-					{
-						text = L.REGION[5],
-						para = { nil, 5, },
-					},
-					{
-						text = L.REGION[6],
-						para = { nil, 6, },
-					},
+				{
+					text = L.REGION[1],
+					param = { nil, 1, },
+				},
+				{
+					text = L.REGION[2],
+					param = { nil, 2, },
+				},
+				{
+					text = L.REGION[3],
+					param = { nil, 3, },
+				},
+				{
+					text = L.REGION[4],
+					param = { nil, 4, },
+				},
+				{
+					text = L.REGION[5],
+					param = { nil, 5, },
+				},
+				{
+					textm = L.REGION[6],
+					param = { nil, 6, },
 				},
 			},
 		},
@@ -3878,39 +3851,37 @@ do	--	SLASH
 			end,
 			[7] = 'drop',
 			[8] = {
-				handler = function(_, drop, val)
-					SlashCmdList["ALACALENDAR"]("setfirst_col_day" .. val);
-					drop:SetVal(floor(val % NUM_COL));
+				handler = function(_, param1, param2)
+					SlashCmdList["ALACALENDAR"]("setfirst_col_day" .. param2[2]);
+					param2[1]:SetVal(floor(param2[2] % NUM_COL));
 				end,
-				elements = {
-					{
-						text = L.WEEKTITLE[1],
-						para = { nil, 1, },
-					},
-					{
-						text = L.WEEKTITLE[2],
-						para = { nil, 2, },
-					},
-					{
-						text = L.WEEKTITLE[3],
-						para = { nil, 3, },
-					},
-					{
-						text = L.WEEKTITLE[4],
-						para = { nil, 4, },
-					},
-					{
-						text = L.WEEKTITLE[5],
-						para = { nil, 5, },
-					},
-					{
-						text = L.WEEKTITLE[6],
-						para = { nil, 6, },
-					},
-					{
-						text = L.WEEKTITLE[0],
-						para = { nil, 0, },
-					},
+				{
+					text = L.WEEKTITLE[1],
+					param = { nil, 1, },
+				},
+				{
+					text = L.WEEKTITLE[2],
+					param = { nil, 2, },
+				},
+				{
+					text = L.WEEKTITLE[3],
+					param = { nil, 3, },
+				},
+				{
+					text = L.WEEKTITLE[4],
+					param = { nil, 4, },
+				},
+				{
+					text = L.WEEKTITLE[5],
+					param = { nil, 5, },
+				},
+				{
+					text = L.WEEKTITLE[6],
+					param = { nil, 6, },
+				},
+				{
+					text = L.WEEKTITLE[0],
+					param = { nil, 0, },
 				},
 			},
 		},

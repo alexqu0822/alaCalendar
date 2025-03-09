@@ -1,4 +1,4 @@
-## Interface: 20504
+## Interface: 11506
 ## Title: ala's Calendar
 ## Title-zhCN: ala's Calendar
 ## Title-zhTW: ala's Calendar
@@ -12,6 +12,6 @@
 ## Author: |cff00ff00ALA|r
 ## Author-zhCN: |cff00ff00ALA|r
 ## Author-zhTW: |cff00ff00ALA|r
-## Version: 205r.250302
+## Version: 115r.250302
 
 alaCalendar.xml

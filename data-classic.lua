@@ -14,8 +14,8 @@ NS.CUR_PHASE = 6;
 --	month_week_day	1_first_seen,	2_cycle_month,	3_check_day,	4_latency,	5_dur,	6_tex_start,	7_curtain,	8_tex_end,	9_tex_start_coord,	10_curtain_coord,	11_tex_end_coord
 --	using UTC-0
 NS.milestone = {
-	--	P1	MC, ONY			--	Global Time	--	UTC-8	2019-08-27 7:00
-	["MC"] = {
+	--	P1	Molten Core, Onyxia's Lair			--	Global Time	--	UTC-8	2019-08-27 7:00
+	["Molten Core"] = {
 		phase = 1,
 		type = "fixed_cycle",
 		18134 * 86400 + 23 * 3600,
@@ -32,7 +32,7 @@ NS.milestone = {
 		instance = true,
 		min = 60,
 	},
-	["ONY"] = {
+	["Onyxia's Lair"] = {
 		phase = 1,
 		type = "fixed_cycle",
 		18138 * 86400 + 23 * 3600,		--	modified	1566860400
@@ -52,8 +52,8 @@ NS.milestone = {
 	--	DM									--	UTC-8	2019-10-16-Wed
 	--	P2	No more RAID					--	UTC-8	2019-11-15-Fri
 	--	BG	Warsong Gulch & Alterac Valley	--	UTC-8	2019-12-12-Thu
-	--	P3	BWL								--	Global Time	--	UTC-8	2020-2-13-Thu-7:00	PST	2020-2-12-15:00	EST	2020-2-12:18:00
-	["BWL"] = {
+	--	P3	Blackwing Lair								--	Global Time	--	UTC-8	2020-2-13-Thu-7:00	PST	2020-2-12-15:00	EST	2020-2-12:18:00
+	["Blackwing Lair"] = {
 		phase = 3,
 		type = "fixed_cycle",
 		18309 * 86400 + 23 * 3600,		--	modified	1581548400
@@ -71,8 +71,8 @@ NS.milestone = {
 		min = 60,
 	},
 	--	BG	Arathi Basin		--	UTC-8	2020-3-12-Thu
-	--	P4	ZG, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
-	["ZG"] = {
+	--	P4	Zul'Gurub, SILITHUS		--	Global Time	--	UTC-8	2020-4-16-Thu-7:00	PDT	2020-4-16-15:00
+	["Zul'Gurub"] = {
 		phase = 4,
 		type = "fixed_cycle",
 		18369 * 86400 + 23 * 3600,		--	modified	1586991600
@@ -90,7 +90,7 @@ NS.milestone = {
 		min = 60,
 	},
 	--	P5
-	["TAQ"] = {
+	["Temple of Ahn'Qiraj"] = {
 		phase = 5,
 		type = "fixed_cycle",
 		18470 * 86400 + 23 * 3600,		--	modified	1595890800
@@ -107,7 +107,7 @@ NS.milestone = {
 		instance = true,
 		min = 60,
 	},
-	["RAQ"] = {
+	["Ruins of Ahn'Qiraj"] = {
 		phase = 5,
 		type = "fixed_cycle",
 		18471 * 86400 + 23 * 3600,		--	modified	1595977200
@@ -125,7 +125,7 @@ NS.milestone = {
 		min = 60,
 	},
 	--	P6
-	["NAXX"] = {
+	["Naxxramas"] = {
 		phase = 6,
 		type = "fixed_cycle",
 		18134 * 86400 + 23 * 3600,
@@ -278,14 +278,14 @@ NS.milestone = {
 	},
 };
 NS.milestone_list = {
-	"NAXX",
-	"TAQ",
-	"BWL",
-	"MC",
+	"Naxxramas",
+	"Temple of Ahn'Qiraj",
+	"Blackwing Lair",
+	"Molten Core",
 	-- "ala",
-	"RAQ",
-	"ZG",
-	"ONY",
+	"Ruins of Ahn'Qiraj",
+	"Zul'Gurub",
+	"Onyxia's Lair",
 	"Warsong Gulch",
 	"Arathi Basin",
 	"Alterac Valley",
@@ -297,13 +297,13 @@ NS.milestone_list = {
 --	实际开放时间的UNIX时间戳
 NS.apply_region = {
 	[1] = function(region)	--	1 = US Pacific		UTC-8
-		NS.milestone["MC"][1] = 18135 * 86400 + 16 * 3600;		--
-		NS.milestone["ONY"][1] = 18141 * 86400 + 16 * 3600;	--
-		NS.milestone["BWL"][1] = 18310 * 86400 + 16 * 3600;	--
-		NS.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
-		NS.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
-		NS.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-		NS.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
+		NS.milestone["Molten Core"][1] = 18135 * 86400 + 16 * 3600;		--
+		NS.milestone["Onyxia's Lair"][1] = 18141 * 86400 + 16 * 3600;	--
+		NS.milestone["Blackwing Lair"][1] = 18310 * 86400 + 16 * 3600;	--
+		NS.milestone["Zul'Gurub"][1] = 18368 * 86400 + 16 * 3600;		--
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18471 * 86400 + 16 * 3600;	--
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18470 * 86400 + 16 * 3600;	--~
+		NS.milestone["Naxxramas"][1] = 18597 * 86400 + 16 * 3600;	--
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 16 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 16 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 22 * 3600;
@@ -314,13 +314,13 @@ NS.apply_region = {
 		NS.set_time_zone();
 	end,
 	[2] = function(region)	--	2 = US Eastern		UTC-5
-		NS.milestone["MC"][1] = 18135 * 86400 + 16 * 3600;		--
-		NS.milestone["ONY"][1] = 18141 * 86400 + 16 * 3600;	--
-		NS.milestone["BWL"][1] = 18310 * 86400 + 16 * 3600;	--
-		NS.milestone["ZG"][1] = 18368 * 86400 + 16 * 3600;		--
-		NS.milestone["TAQ"][1] = 18471 * 86400 + 16 * 3600;	--
-		NS.milestone["RAQ"][1] = 18470 * 86400 + 16 * 3600;	--~
-		NS.milestone["NAXX"][1] = 18597 * 86400 + 16 * 3600;	--
+		NS.milestone["Molten Core"][1] = 18135 * 86400 + 16 * 3600;		--
+		NS.milestone["Onyxia's Lair"][1] = 18141 * 86400 + 16 * 3600;	--
+		NS.milestone["Blackwing Lair"][1] = 18310 * 86400 + 16 * 3600;	--
+		NS.milestone["Zul'Gurub"][1] = 18368 * 86400 + 16 * 3600;		--
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18471 * 86400 + 16 * 3600;	--
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18470 * 86400 + 16 * 3600;	--~
+		NS.milestone["Naxxramas"][1] = 18597 * 86400 + 16 * 3600;	--
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 13 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 13 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 22 * 3600;
@@ -331,13 +331,13 @@ NS.apply_region = {
 		NS.set_time_zone();
 	end,
 	[3] = function(region)	--	3 = Korea
-		NS.milestone["MC"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
-		NS.milestone["ONY"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
-		NS.milestone["BWL"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
-		NS.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
-		NS.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
-		NS.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		--~ 1567213200
-		NS.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
+		NS.milestone["Molten Core"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
+		NS.milestone["Onyxia's Lair"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
+		NS.milestone["Blackwing Lair"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
+		NS.milestone["Zul'Gurub"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18471 * 86400 + 1 * 3600;		--~ 1567213200
+		NS.milestone["Naxxramas"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 - 5 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 - 5 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 5 * 3600;
@@ -348,13 +348,13 @@ NS.apply_region = {
 		NS.set_time_zone();
 	end,
 	[4] = function(region)	--	4 = Europe			UTC+1
-		NS.milestone["MC"][1] = 18136 * 86400 + 7 * 3600;		--
-		NS.milestone["ONY"][1] = 18140 * 86400 + 7 * 3600;		--
-		NS.milestone["BWL"][1] = 18304 * 86400 + 7 * 3600;		--
-		NS.milestone["ZG"][1] = 18368 * 86400 + 7 * 3600;		--
-		NS.milestone["TAQ"][1] = 18472 * 86400 + 7 * 3600;		--
-		NS.milestone["RAQ"][1] = 18470 * 86400 + 7 * 3600;		--~
-		NS.milestone["NAXX"][1] = 18598 * 86400 + 7 * 3600;	--
+		NS.milestone["Molten Core"][1] = 18136 * 86400 + 7 * 3600;		--
+		NS.milestone["Onyxia's Lair"][1] = 18140 * 86400 + 7 * 3600;		--
+		NS.milestone["Blackwing Lair"][1] = 18304 * 86400 + 7 * 3600;		--
+		NS.milestone["Zul'Gurub"][1] = 18368 * 86400 + 7 * 3600;		--
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18472 * 86400 + 7 * 3600;		--
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18470 * 86400 + 7 * 3600;		--~
+		NS.milestone["Naxxramas"][1] = 18598 * 86400 + 7 * 3600;	--
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 + 3 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 + 3 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 13 * 3600;
@@ -365,13 +365,13 @@ NS.apply_region = {
 		NS.set_time_zone();
 	end,
 	[5] = function(region)	--	5 = Taiwan
-		NS.milestone["MC"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
-		NS.milestone["ONY"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
-		NS.milestone["BWL"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
-		NS.milestone["ZG"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
-		NS.milestone["TAQ"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
-		NS.milestone["RAQ"][1] = 18471 * 86400 + 1 * 3600;		-- 1567213200
-		NS.milestone["NAXX"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
+		NS.milestone["Molten Core"][1] = 18137 * 86400 + 1 * 3600;		-- 1567040400
+		NS.milestone["Onyxia's Lair"][1] = 18136 * 86400 + 1 * 3600;		-- 1566954000
+		NS.milestone["Blackwing Lair"][1] = 18305 * 86400 + 1 * 3600;		-- 1581555600
+		NS.milestone["Zul'Gurub"][1] = 18366 * 86400 + 1 * 3600;		-- 1586826000
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18473 * 86400 + 1 * 3600;		-- 1567040400
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18471 * 86400 + 1 * 3600;		-- 1567213200
+		NS.milestone["Naxxramas"][1] = 18599 * 86400 + 1 * 3600;	-- 1567040400
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 - 4 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 6 * 3600;
@@ -382,13 +382,13 @@ NS.apply_region = {
 		NS.set_time_zone();
 	end,
 	[6] = function(region)	--	6 = China
-		NS.milestone["MC"][1] = 18766 * 86400 + 23 * 3600;		--	--	2021-05-20	1621465200
-		NS.milestone["ONY"][1] = 18765 * 86400 + 23 * 3600;		--	--	2021-05-19	1621353600
-		NS.milestone["BWL"][1] = 18766 * 86400 + 23 * 3600;		--	
-		NS.milestone["ZG"][1] = 18764 * 86400 + 23 * 3600;		--	--	2021-05-18	1621267200
-		NS.milestone["TAQ"][1] = 18766 * 86400 + 23 * 3600;		--
-		NS.milestone["RAQ"][1] = 18764 * 86400 + 23 * 3600;		--~
-		NS.milestone["NAXX"][1] = 18766 * 86400 + 23 * 3600;	--
+		NS.milestone["Molten Core"][1] = 18766 * 86400 + 23 * 3600;		--	--	2021-05-20	1621465200
+		NS.milestone["Onyxia's Lair"][1] = 18765 * 86400 + 23 * 3600;		--	--	2021-05-19	1621353600
+		NS.milestone["Blackwing Lair"][1] = 18766 * 86400 + 23 * 3600;		--	
+		NS.milestone["Zul'Gurub"][1] = 18764 * 86400 + 23 * 3600;		--	--	2021-05-18	1621267200
+		NS.milestone["Temple of Ahn'Qiraj"][1] = 18766 * 86400 + 23 * 3600;		--
+		NS.milestone["Ruins of Ahn'Qiraj"][1] = 18764 * 86400 + 23 * 3600;		--~
+		NS.milestone["Naxxramas"][1] = 18766 * 86400 + 23 * 3600;	--
 		NS.milestone["DarkMoon: Mulgore"][1] = 18298 * 86400 - 4 * 3600;
 		NS.milestone["DarkMoon: Elwynn"][1] = 18327 * 86400 - 4 * 3600;
 		NS.milestone["Fishing Extravaganza"][1] = 18371 * 86400 + 6 * 3600;
@@ -401,23 +401,23 @@ NS.apply_region = {
 };
 
 NS.raid_list = {
-	"NAXX",
-	"TAQ",
-	"RAQ",
-	"BWL",
-	"ZG",
-	"MC",
-	"ONY",
+	"Naxxramas",
+	"Temple of Ahn'Qiraj",
+	"Ruins of Ahn'Qiraj",
+	"Blackwing Lair",
+	"Zul'Gurub",
+	"Molten Core",
+	"Onyxia's Lair",
 	-- "ala",
 };
 NS.instances_hash = {
-	["NAXX"] = true,
-	["TAQ"] = true,
-	["RAQ"] = true,
-	["BWL"] = true,
-	["ZG"] = true,
-	["MC"] = true,
-	["ONY"] = true,
+	["Naxxramas"] = true,
+	["Temple of Ahn'Qiraj"] = true,
+	["Ruins of Ahn'Qiraj"] = true,
+	["Blackwing Lair"] = true,
+	["Zul'Gurub"] = true,
+	["Molten Core"] = true,
+	["Onyxia's Lair"] = true,
 	["Warsong Gulch"] = true,
 	["Arathi Basin"] = true,
 	["Alterac Valley"] = true,

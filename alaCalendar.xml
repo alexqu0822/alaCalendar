@@ -13,6 +13,7 @@
     <script file = "data-bcc.lua" />
     <script file = "data-wrath.lua" />
     <script file = "alaCalendar.lua" />
+    <script file = "Misc.lua" />
 
     <!-- <include file = "Bindings.xml" /> -->
     
