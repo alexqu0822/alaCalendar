@@ -1,7 +1,7 @@
 --[[--
-	by ALA @ 163UI
+	by ALA
 --]]--
-----------------------------------------------------------------------------------------------------
+
 local _G = _G;
 local __ala_meta__ = _G.__ala_meta__;
 
@@ -4157,52 +4157,3 @@ do	--	DEV
 		NS.date_engine.date = NS.date_engine.built_in_date;
 	end
 end
-
-
---	something else
-	local buttons = {  };
-	for i = 1, MAX_RAID_INFOS do
-		local b = _G["RaidInfoInstance" .. i];
-		buttons[i] = b;
-		b:EnableMouse(true);
-		b.__ID = i;
-		b.__HL = b:CreateTexture(nil, "OVERLAY");
-		b.__HL:SetAllPoints();
-		b.__HL:SetColorTexture(1.0, 0.75, 0.5, 0.25);
-		b.__HL:SetBlendMode("ADD");
-		b.__HL:Hide();
-		b:SetScript("OnEnter", function(self)
-			self.__HL:Show();
-			if self.__ID <= GetNumSavedInstances() then
-				local name, id, reset, difficulty, locked, extended, instanceIDMostSig, isRaid, maxPlayers, difficultyName, numEncounters, encounterProgress = GetSavedInstanceInfo(self.__ID);
-				if name ~= nil then
-					GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-					GameTooltip:AddDoubleLine(name, id, 1.0, 1.0, 1.0, 0.35, 0.35, 0.35);
-					if locked then
-						GameTooltip:AddLine(RESETS_IN .. " " .. SecondsToTime(reset), 0.5, 0.5, 0.5);
-						GameTooltip:AddLine(" ");
-						-- var[1] = id;
-						-- var[2] = t;
-						-- var[3] = numEncounters;
-						-- var[4] = encounterProgress;
-						for encounterIndex = 1, numEncounters do
-							local bossName, fileDataID, isKilled, unknown4 = GetSavedInstanceEncounterInfo(self.__ID, encounterIndex);
-							-- var[4 + encounterIndex * 2 - 1] = bossName;
-							-- var[4 + encounterIndex * 2] = isKilled;
-							if isKilled then
-								GameTooltip:AddDoubleLine(bossName, BOSS_DEAD, 0.875, 0.875, 0.875, 1.0, 0.0, 0.0);
-							else
-								GameTooltip:AddDoubleLine(bossName, BOSS_ALIVE, 0.875, 0.875, 0.875, 0.0, 1.0, 0.0);
-							end
-						end
-					end
-					GameTooltip:Show();
-				end
-			end
-		end);
-		b:SetScript("OnLeave", function(self)
-			self.__HL:Hide();
-			GameTooltip:Hide();
-		end);
-	end
---
