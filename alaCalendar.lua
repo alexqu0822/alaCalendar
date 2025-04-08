@@ -2334,8 +2334,9 @@ do	--	MAIN
 						index = index + 2;
 					end
 				end
-				scroll:SetNumValue(#display_list / 3);
-				scroll:Update();
+				if not scroll:SetNumValue(#display_list / 3) then
+					scroll:Update();
+				end
 			end
 			frame:SetScript("OnShow", function(self)
 				self:update_func();
@@ -2459,6 +2460,8 @@ do	--	MAIN
 				data_index = data_index - 1;
 				if data_index == 0 then
 					button.icon:Show();
+					button.icon:SetTexture(ui_style.texture_claw);
+					button.icon:SetTexCoord(0.0, 1.0, 0.0, 1.0);
 					button.title:SetText(L.CHAR_ADD);
 					button.note:SetText(nil);
 				elseif data_index <= #list then
@@ -2471,9 +2474,10 @@ do	--	MAIN
 							local coord = CLASS_ICON_TCOORDS[class];
 							if coord then
 								button.icon:Show();
+								button.icon:SetTexture("interface\\targetingframe\\ui-classes-circles");
 								button.icon:SetTexCoord(coord[1] + 1 / 256, coord[2] - 1 / 256, coord[3] + 1 / 256, coord[4] - 1 / 256);
 							else
-								button.icon:Show();
+								button.icon:Hide();
 							end
 							local classColorTable = RAID_CLASS_COLORS[class];
 							if classColorTable then
@@ -2493,9 +2497,10 @@ do	--	MAIN
 							local coord = CLASS_ICON_TCOORDS[class];
 							if coord then
 								button.icon:Show();
+								button.icon:SetTexture("interface\\targetingframe\\ui-classes-circles");
 								button.icon:SetTexCoord(coord[1] + 1 / 256, coord[2] - 1 / 256, coord[3] + 1 / 256, coord[4] - 1 / 256);
 							else
-								button.icon:Show();
+								button.icon:Hide();
 							end
 							if realm ~= nil and realm ~= "" then
 								name = name .. "-" .. realm;
@@ -2770,7 +2775,9 @@ do	--	MAIN
 					scroll:SetPoint("BOTTOMLEFT", 4, 12);
 					scroll:SetPoint("TOPRIGHT", - 4, - 24);
 					char_list.scroll = scroll;
-					scroll:SetNumValue(#SET.char_list + 1);
+					if not scroll:SetNumValue(#SET.char_list + 1) then
+						scroll:Update();
+					end
 
 					char_list:SetScript("OnShow", function(self)
 						local board = gui["BOARD"];
@@ -3535,7 +3542,9 @@ do	--	MAIN
 	function NS.ui_update_config_char_list()
 		local cs = gui["CHAR_LIST"].scroll;
 		if cs:IsShown() then
-			cs:SetNumValue(#SET.char_list + 1);
+			if not cs:SetNumValue(#SET.char_list + 1) then
+				cs:Update();
+			end
 			cs:Update();
 		end
 	end
