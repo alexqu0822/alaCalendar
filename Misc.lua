@@ -2,7 +2,7 @@
 	by ALA
 --]]--
 
-if U1CoreAPI.GetClientMajor() > 4 then
+if select(4, GetBuildInfo()) >= 50000 then
 	return;
 end
 
